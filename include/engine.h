@@ -10,7 +10,7 @@
 
 /* world size and storage array */
 #define WORLDX 100
-#define WORLDY 50
+#define WORLDY 100
 #define WORLDZ 100
 GLubyte  world[WORLDX][WORLDY][WORLDZ];
 GLubyte  visible[WORLDX][WORLDY][WORLDZ];
@@ -21,9 +21,15 @@ GLubyte  visible[WORLDX][WORLDY][WORLDZ];
 #define RED 3
 #define BLACK 4
 #define WHITE 5
-#define GRAY 6
-#define GREY 6
-#define BROWN 7
+#define PURPLE 6
+#define ORANGE 7
+#define COAL 8
+#define STONE 9
+#define BROWN 10
+#define YELLOW 11
+#define GRAY 9
+#define GREY 9
+#define DIRT 10
 
 #define PI 3.1415
 #define MOB_COUNT 10

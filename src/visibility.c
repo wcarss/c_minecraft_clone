@@ -6,6 +6,11 @@
 
 int you_can_see(int x, int y, int z)
 {
+  if(x == 0 || y == 0 || z == 0)
+    return 0;
+  if(x == WORLDX-1 || y == WORLDY-1 || z == WORLDZ-1)
+    return 0;
+
   if(world[x+1][y][z] == 0 || world[x-1][y][z] == 0
       || world[x][y+1][z] == 0 || world[x][y-1][z] == 0
       || world[x][y][z+1] == 0 || world[x][y][z-1] == 0)
@@ -16,6 +21,7 @@ int you_can_see(int x, int y, int z)
 
 void trimout()
 {
+  int debug = 0;
   int x,y,z;
   
   for(x = 0; x < WORLDX; x++)
@@ -32,6 +38,10 @@ void trimout()
 	{
 	  visible[x][y][z] = 0;
 	}
+
+        if(debug)
+          if(x == 0 || y == 0 || z == 0 || x == WORLDX-1 || y == WORLDY-1 || z == WORLDZ-1)
+            visible[x][y][z] = 0;
       }
     }
   }	

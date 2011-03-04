@@ -240,7 +240,13 @@ void drawCube(int i, int j, int k)
   GLfloat orange[]   = {1.0, 0.64, 0.0, 1.0};
   GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
   GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
+  GLfloat coal[] = {0.15, 0.15, 0.15, 1.0};
+  GLfloat stone[] = {0.5, 0.5, 0.5, 1.0};
+  GLfloat brown[] = {102.0/255, 69.0/255, 35.0/255, 1.0};
 
+  GLfloat dcoal[] = {0.075, 0.075, 0.075, 1.0};
+  GLfloat dstone[] = {0.25, 0.25, 0.25, 1.0};
+  GLfloat dbrown[] = {102.0/510, 69.0/510, 35.0/510, 1.0};
   GLfloat dblue[]  = {0.0, 0.0, 0.5, 1.0};
   GLfloat dred[]   = {0.5, 0.0, 0.0, 1.0};
   GLfloat dgreen[] = {0.0, 0.5, 0.0, 1.0};
@@ -252,43 +258,62 @@ void drawCube(int i, int j, int k)
   /* select colour based on value in the world array */
   glMaterialfv(GL_FRONT, GL_SPECULAR, white);
 
-  if (world[i][j][k] == 1)
+  if (world[i][j][k] == GREEN)
   {
     glMaterialfv(GL_FRONT, GL_AMBIENT, dgreen);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, green);
   }
-  else if (world[i][j][k] == 2)
+  else if (world[i][j][k] == BLUE)
   { 
     glMaterialfv(GL_FRONT, GL_AMBIENT, dblue);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, blue);
   }
-  else if (world[i][j][k] == 3)
+  else if (world[i][j][k] == RED)
   {
     glMaterialfv(GL_FRONT, GL_AMBIENT, dred);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, red);
   }
-  else if (world[i][j][k] == 4)
+  else if (world[i][j][k] == BLACK)
   {
     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
   }
-  else if (world[i][j][k] == 5)
+  else if (world[i][j][k] == WHITE)
   {
     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
   }
-  else if (world[i][j][k] == 6)
+  else if (world[i][j][k] == PURPLE)
   {
     glMaterialfv(GL_FRONT, GL_AMBIENT, dpurple);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, purple);
   }
-  else if (world[i][j][k] == 7)
+  else if (world[i][j][k] == ORANGE)
   { 
     glMaterialfv(GL_FRONT, GL_AMBIENT, dorange);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, orange);
   }
-  else
-  {
+  else if (world[i][j][k] == COAL)
+  { 
+    glMaterialfv(GL_FRONT, GL_AMBIENT, dcoal);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, coal);
+  }
+  else if (world[i][j][k] == STONE)
+  { 
+    glMaterialfv(GL_FRONT, GL_AMBIENT, dstone);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, stone);
+  }
+  else if (world[i][j][k] == BROWN)
+  { 
+    glMaterialfv(GL_FRONT, GL_AMBIENT, dbrown);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, brown);
+  }
+  else if (world[i][j][k] == YELLOW)
+  { 
     glMaterialfv(GL_FRONT, GL_AMBIENT, dyellow);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, yellow);
+  }
+  else
+  {
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
   }
 
   glPushMatrix ();

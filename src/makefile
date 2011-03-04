@@ -6,13 +6,10 @@ CFLAGS = -Wall -std=c99 -pedantic -g
 OSX = -F/System/Library/Frameworks -framework OpenGL -framework GLUT -lm
 UBUNTU = -lm -lGLU -lglut -lrt -DUBUNTU
 
-default: a3osx
+default: ubuntu
 
-ubuntu: a3ubuntu
-osx: a3osx
-
-a3osx: $(INCLUDE_FILES) $(SRC_FILES)
+osx: $(INCLUDE_FILES) $(SRC_FILES)
 	gcc $(SRC_FILES) -o ../a3 -I$(INCLUDE) $(OSX) $(CFLAGS)
 
-a3ubuntu: $(INCLUDE_FILES) $(SRC_FILES)
+ubuntu: $(INCLUDE_FILES) $(SRC_FILES)
 	gcc $(SRC_FILES) -o ../a3 -I$(INCLUDE) $(UBUNTU) $(CFLAGS) 
