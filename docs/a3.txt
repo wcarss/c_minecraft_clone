@@ -1,0 +1,97 @@
+
+
+Assignmet 3 - Add Moving Objects and Modify the World
+-----------------------------------------------------
+Due date - March 11, 2011.
+Assignment 3 is marked out of 15.
+
+
+The following features are added for assignment 3.
+- Implement MOBS (monsters) which wander around and will follow
+  the player. Use a graph (adjacency matrix) to plot their path.
+-Add the ability to remove cubes from the world.
+-Adjust the collision detection so the player is two units tall. This might
+ require a change to the maze algorithm.
+
+Copy your code from assignments 1 and 2 to the a3.c main.
+
+
+1. Add Moving Objects (MOBS)
+----------------------------
+Mobs are moving objects. In this case they will be used to creating monsters
+which will wander around in the game and chase the player.
+
+For the maze generated in assignment 2 create a path through the
+maze which the mobs will follow.  The path should be represented
+as a graph between points in the maze. The mob should move between
+those points. When the program starts print the adjacency matrix for
+the graph to the screen. Since the mazes were random the graph should
+change with each run of the program.
+
+Make several mobs so the TA does not need to search a long time for one.
+If you cannot make multiple mobs work it is worth more marks to make one mob
+achieve both parts 1 and 2 of the assignment then it is to get multiple
+mobs to do only part 1.
+
+Mobs can move smoothly between adjacent x,y,z locations or they
+can move in integer steps. The important thing is that they always move
+to adjacent locations. They cannot jump between non-adjacent positions
+of the world.
+
+
+2. Have the Mobs Follow the Player
+----------------------------------
+When the player moves to within two adjacent squares of a mob
+have the mob do two things.
+
+Firstly, it should turn to face the player. This can be an instantaneous
+turn. It should continue to face the player as the player moves.
+Facing the player involves the white eyes on the mob pointing towards
+the player.
+
+Secondly, have the mob follow the player. This means the mob will
+need to leave the path and follow the players movements.
+You can determine the player's path any way you wish but two possible
+ways to do this are:
+-Keep track of the cube locations where the player moves.  Once the player
+ moves to a location have the mob move there. This is the easier choice.
+ You will probably need to keep a list of the last few player locations.
+ If the player removes the cubes which they walked on then it is allowable
+ for the mob to fly over the empty space which the player had previously
+ occupied.
+-Create a path between the mob's current location and the players
+ location. Have the mob follow the path. This is the harder solution.
+
+Multiple mobs should not move into the same location. This means
+they may have to wait a while before they can follow the player if another
+mob gets in their way.
+
+Mobs should not move into the same location as the player.
+However, they player should be able to walk into a location with a mob.
+Without this the player might be cornered by the mobs and not be able
+to move away.
+
+
+3. Remove Cubes from the World
+------------------------------
+The player should be able to remove cubes from the terrain. This should
+affect the appearance and the collision with world objects. 
+
+If the player presses the space bar then the cube which they are pointing
+towards should be removed.  This should have a maximum range of one cube
+away from the viewer. They should be able to remove any of the 
+cubes adjacent to the viewpoint.
+
+With the player being modified to be two units tall in part 4 of this
+assignment it means there are potentially 34 cubes which can be removed.
+They will all be plus or minus 1 or 2 cubes from the location of the viewpoint.
+
+4. Modify Collision Detection
+-----------------------------
+Since the viewpoint is raised by 0.5 should adjust some of your
+collision detection code to consider that your player is two units tall.
+If you do this then they should only be able to walk into places which
+are two blocks tall. This may require some modifications of the maze
+from assignment 2 so it is tall enough for the player to walk through.
+This should involve a very small change to the existing collision code.
+

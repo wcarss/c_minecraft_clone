@@ -1,0 +1,1 @@
+gcc main.c engine.c perlin.c visibility.c test_world.c world.c -o ../a3 -I../include -F/System/Library/Frameworks -framework OpenGL -framework GLUT -lm -Wall -std=c99 -pedantic -g
