@@ -19,7 +19,30 @@
    the array indices */
 void collisionResponse()
 {
-  /* your code goes here */
+  /* implement collision, gravity, and climbing onto single cubes here */
+  float x,y,z;
+  getViewPosition(&x,&y,&z);
+  x *= -1;
+  y *= -1;
+  z *= -1;
+
+  if(flycontrol == 1) return;
+
+  if(world[(int)x][(int)y][(int)z] != 0 && world[(int)x][(int)y][(int)z] != WHITE)
+  {
+    if(world[(int)x][(int)y+1][(int)z] == 0)
+    {
+      y++;
+      x *= -1;
+      y *= -1;
+      z *= -1;
+    }
+    else 
+    {
+      getOldViewPosition(&x,&y,&z);
+    }
+    setViewPosition(x,y,z);
+  }
 
 }
 
@@ -29,6 +52,7 @@ void collisionResponse()
 /* -for assignment 3, mob control and digging goes here */
 void update()
 {
+  float vx, vy, vz;
   sample_mob_code(); // came with the file; can be replaced
 
   /* sample use of the dig flag, it is set equal to 1 when the user */
@@ -37,6 +61,22 @@ void update()
   {
     printf("dig\n");
     dig = 0;
+  }
+
+  if(flycontrol == 0)
+  {
+    getViewPosition(&vx,&vy,&vz);
+    vx *= -1;
+    vy *= -1;
+    vz *= -1;
+    if(world[(int)vx][(int)vy-1][(int)vz] == 0)
+    {
+      vy -= 0.2;
+      vx *= -1;
+      vy *= -1;
+      vz *= -1;
+      setViewPosition(vx,vy,vz);
+    }
   }
 
   /* your code goes here */

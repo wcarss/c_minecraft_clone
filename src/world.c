@@ -136,7 +136,8 @@ void maze(int low, int high)
     lines = rand() % 15;
     for(num = 0; num < lines; num++)
     {
-      x = rand() % (WORLDX-1);
+      if(num == 0) x = 45;
+      else x = rand() % (WORLDX-1);
       for(z = 1; z < WORLDZ-1; z++)
       {
         for(y = low; y <= high; y++)
@@ -287,11 +288,11 @@ int build_world()
   perlin(25, 75,DIRT);
   cover(GREEN);
   fill_lakes(40);
-  cut(45, 45, 18);  
   mark(45, 44,RED);
   mark(44, 45,RED); 
   mark(46, 45,RED);
   mark(45, 46,RED);
   maze(18, 20);
+  cut(45, 45, 18);  
   return 0;
 }

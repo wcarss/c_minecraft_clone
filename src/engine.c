@@ -19,7 +19,7 @@ GLubyte  Image[64][64][4];
 GLuint   textureID[1];
 
 /* viewpoint coordinates */
-float vpx = -50.0, vpy = -50.0, vpz = -50.0;
+float vpx = -50.0, vpy = -80.0, vpz = -50.0;
 float oldvpx, oldvpy, oldvpz;
 
 /* mouse direction coordiates */
