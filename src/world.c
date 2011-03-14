@@ -100,6 +100,61 @@ void mark(int x, int z, int type)
   }
 }
 
+void maze(int low, int high)
+{
+  int x, y, z, lines, num, dimension_increment;
+
+  for(x = 1; x < WORLDX-1; x++)
+    for(y = low; y <= high; y++)
+      for(z = 1; z < WORLDZ-1; z++)
+        if(0 < PerlinNoise3D(x/12.0, y/12.0, z/12.0, 2.1, 1.9, 2))
+        {
+           if(rand() % 3 > 1)
+             world[x][y][z] = STONE;
+           else
+             world[x][y][z] = DIRT;
+        }
+
+  for(dimension_increment = 0; dimension_increment <= 1; dimension_increment++)
+  {
+    for(x = 0; x < WORLDX; x++)
+      for(y = low; y <= high; y++)
+      {
+        if(dimension_increment == 0)
+        {
+          world[x][y][0] = STONE;
+          world[x][y][WORLDZ-1] = STONE;
+        }
+        else
+        {
+          world[0][y][x] = STONE;
+          world[WORLDX-1][y][x] = STONE;
+        }
+      }
+
+
+    lines = rand() % 15;
+    for(num = 0; num < lines; num++)
+    {
+      x = rand() % (WORLDX-1);
+      for(z = 1; z < WORLDZ-1; z++)
+      {
+        for(y = low; y <= high; y++)
+        {
+          if(dimension_increment == 0)
+          {
+            world[x][y][z] = EMPTY;
+          } 
+          else if(dimension_increment == 1)
+          {
+            world[z][y][x] = EMPTY;
+          }
+        }
+      }
+    }
+  }
+}
+
 /* Uses Ken Perlin's PerlinNoise2D to generate smooth, interesting terrain.
    Generates terrain across the world, at y=level +/- scale 
    Code found at http://local.wasp.uwa.edu.au/~pbourke/texture_colour/perlin */
@@ -226,16 +281,17 @@ int build_world()
 //  fill(8,8,COAL);
 //  fill(11,11,COAL);
 //  fill(14,14,STONE);
-  fill(17,17,STONE);
-  fill(20,20,STONE);
-  perlin(20,30,STONE);
-  perlin(25,75,DIRT);
+  fill(17, 17,STONE);
+  fill(21, 21,STONE);
+  perlin(21, 30,STONE);
+  perlin(25, 75,DIRT);
   cover(GREEN);
   fill_lakes(40);
-  cut(45,45,18);  
-  mark(45,44,RED);
-  mark(44,45,RED); 
-  mark(46,45,RED);
-  mark(45,46,RED);
+  cut(45, 45, 18);  
+  mark(45, 44,RED);
+  mark(44, 45,RED); 
+  mark(46, 45,RED);
+  mark(45, 46,RED);
+  maze(18, 20);
   return 0;
 }

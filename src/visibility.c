@@ -39,6 +39,9 @@ void trimout()
 	  visible[x][y][z] = 0;
 	}
 
+        if(y == 18 && (x == WORLDX-1 || z == WORLDZ-1 || x == 0 || z == 0))
+          visible[x][y][z] = 1;
+
         if(debug)
           if(x == 0 || y == 0 || z == 0 || x == WORLDX-1 || y == WORLDY-1 || z == WORLDZ-1)
             visible[x][y][z] = 0;
