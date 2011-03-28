@@ -1,0 +1,66 @@
+Intro
+	This is a simple, small stack library written by Wyatt Carss. It operates
+	on strings. Stack size should be theoretically boundless, and string size
+	is set by a #define in "stack.h".
+
+	It's memory-leak-free and so far as I know, bug-free at this point. I'm
+	intending to use it to verify correct nesting of tags within an SGML
+	document.
+
+	Return values are a bit scattershot; they'd be a smart thing to make
+	more logical. Also, I'd bet that I could have used strncmp instead of
+	strcmp, given my #define for string size. If you want to make a buffer-
+	ovverrun, there's your avenue for it :)
+
+	Fun bit of work while watching Dr. Who on a Saturday night. 3-7AMish.
+
+	-Wyatt, January 23rd, 2011, 7:33 AM
+
+Build and Install:
+	'make' to build
+	'make clean' to remove objects and clutter
+	'make cleanall' to leave just the sources.
+
+API:
+	Creation/Destruction:
+		int new_stack(Stack *s)
+		int kill_stack(Stack *s)
+	Business Functions:
+		int push(Stack s, char *str)
+		int pop(Stack s, char *str)
+		int peek(Stack s, char *str)
+	Return Values:
+		0	OK
+		1	Failed (pretty general -- usually NULLs passed where not expected)
+		2	Stack is empty (happens for pop and peek - str remains untouched)
+
+
+Usage:
+
+#include<stdio.h>
+#include "stack.h"
+
+int main()
+{
+	Stack s;
+	char str[64];
+
+	new_stack(&s);
+	push(s, "on you go");
+	push(s, "just like that");
+	push(s, "and we're done");
+
+	peek(s, str);
+	printf("top of the stack says: %s\n", str);
+
+	printf("Clearing it all away...\n");
+	while(pop(s, str) != 2)
+	{
+		printf("Popped: %s.\n", str);
+	}
+	printf("All done!\n");
+
+	kill_stack(&s);
+	return 0;
+}
+

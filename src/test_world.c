@@ -57,6 +57,50 @@ void sample_mob_code()
    }
 }
 
+void place_mobs()
+{ 
+   createMob(0, 45.0, 18.0, 45.0, 0.0);
+   createMob(1, 45.0, 18.0, 45.0, 90.0);
+   createMob(2, 45.0, 18.0, 45.0, 180.0);
+   createMob(3, 45.0, 18.0, 45.0, 360.0);  
+}
+
+void mob_action()
+{
+  static float mobx[4] = {45,45,45,45};
+  static float moby[4] = {18,18,18,18};
+  static float mobz[4] = {45,45,45,45};
+  static float mobr[4] = {0,90,180,270};
+  int outcome;
+  float old_mobx, old_moby;
+
+  int i;
+  for(i = 0; i < 4; i++)
+  {
+//    do
+//    {
+      old_mobx = mobx[i];
+      old_moby = moby[i];
+      outcome = rand()%10;
+      if(outcome > 1)
+        mobx[i] += 1;
+        if(mobx[i] >= WORLDX-1) mobx[i] -= 1;
+      else if(outcome > 4)
+        mobx[i] -= 1;
+        if(mobx[i] < 0) mobx[i] += 1;
+      else if(outcome > 7)
+        moby[i] += 1;
+        if(moby[i] >= WORLDY-1) moby[i] -= 1;
+      else
+        moby[i] -= 1;
+        if(moby[i] < 0) moby[i] += 1;
+//    }while((old_mobx == mobx[i] && old_moby == moby[i]) || world[(int)mobx[i]][(int)moby[i]][(int)mobz[i]] != EMPTY);
+ 
+    setMobPosition(i, mobx[i], moby[i], mobz[i], mobr[i]);
+  }
+}
+
+
 void build_test_world()
 {
    int i, j, k;
@@ -110,4 +154,6 @@ void build_test_world()
    createMob(0, 50.0, 25.0, 52.0, 0.0);
    createMob(1, 50.0, 25.0, 52.0, 0.0);
 
+   /* create sample player */
+   createPlayer(0, 52.0, 27.0, 52.0, 0.0);
 } 

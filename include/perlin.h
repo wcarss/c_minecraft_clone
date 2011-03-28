@@ -1,3 +1,5 @@
+#ifndef _PERLIN
+#define PERLIN
 /* File written by Ken Perlin, taken from Paul Bourke's website at http://local.wasp.uwa.edu.au/~pbourke/texture_colour/perlin/, used by Wyatt Carss on January 28th, 2011. */
 
 #define B 0x100
@@ -27,4 +29,4 @@ void normalize2(double *);
 double PerlinNoise1D(double,double,double,int);
 double PerlinNoise2D(double,double,double,double,int);
 double PerlinNoise3D(double,double,double,double,double,int);
-
+#endif

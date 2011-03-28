@@ -254,28 +254,30 @@ void maze(int low, int high)
 
 /* Makes perlin-noise clouds! Uses Ken Perlin's PerlinNoise3D function, taken from
 http://local.wasp.uwa.edu.au/~pbourke/texture_colour/perlin */
-/*void perlin_clouds(double level, double scale, double deg)
+void perlin_clouds(double level, double scale, double deg)
 {
   int x, z;
   GLfloat *light = getLightPosition();
+  clouds_flag = 1;
 
   level = bounds(level, 0, WORLDY-1);
   for(x = 0; x < WORLDX; x++)
   {
     for(z = 0; z < WORLDZ; z++)
     {
-  */    /* Overwrite whatever was here before, as long as it isn't the sun. */
-    //  if(!((float)x == light[0] && level == light[1] && (float)z == light[2]))
-//	world[x][(int)level][z] = EMPTY;
+      /* Overwrite whatever was here before, as long as it isn't the sun. */
+      if(!((float)x == light[0] && level == light[1] && (float)z == light[2]))
+	world[x][(int)level][z] = EMPTY;
 
       /* Using deg (from update) as the y-axis, step through slices of
 	 smooth volumetric noise to get realistic looking clouds. */
-  /*    if((PerlinNoise3D(x/76.0, z/76.0, deg/108.0, 1.99, 2.1, 4) * scale) > 0)
+      if((PerlinNoise3D(x/76.0, z/76.0, deg/108.0, 1.99, 2.1, 4) * scale) > 0)
 	world[x][(int)level][z] = WHITE;
     }
   }
 }
-*/
+
+
 int build_world()
 {
 //  fill(0,5,BLACK);

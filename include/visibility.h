@@ -1,3 +1,5 @@
+#ifndef _VISIBILITY
+#define VISIBILITY
 float frustum[6][4];
 
 int CubeInFrustum( float x, float y, float z, float size );
@@ -6,3 +8,4 @@ int PointInFrustum( float x, float y, float z );
 void trimout();
 int you_can_see(int x, int y, int z);
 void buildDisplayList();
+#endif

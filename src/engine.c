@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include "engine.h"
+#include "network.h"
 
 /* flags used to control the appearance of the image */
 int lineDrawing = 0;	// draw polygons as solid or lines
@@ -45,11 +46,89 @@ int displayCount = 0;		// count of cubes in displayList[][]
 float mobPosition[MOB_COUNT][4];
 /* visibility of mobs, 0 not drawn, 1 drawn */
 short mobVisible[MOB_COUNT];
+int mobflag[MOB_COUNT];
 
+/* list of players - number of mobs, xyz values and rotation about y */
+float playerPosition[PLAYER_COUNT][4];
+/* visibility of players, 0 not drawn, 1 drawn */
+short playerVisible[PLAYER_COUNT];
+int sun_flag = 0;
+int player_flag[PLAYER_COUNT] = {0};
+int clouds_flag = 0;
 /* flag indicating the user wants the cube in front of them removed */
 int dig = 0;
-
+int digflag[3];
 /***************/
+
+
+/* player control functions */
+/* set all player location, rotation, and visibility values to zero */
+void initPlayerArray()
+{
+  int i;
+  for (i=0; i<PLAYER_COUNT; i++)
+  {
+    playerPosition[i][0] = 0.0;
+    playerPosition[i][1] = 0.0;
+    playerPosition[i][2] = 0.0;
+    playerPosition[i][3] = 0.0;
+    playerVisible[i] = 0;
+  }
+}
+
+/* create player with identifier "number" at x,y,z with */
+/* heading of rotx, roty, rotz */
+void createPlayer(int number, float x, float y, float z, float playerroty)
+{
+  if (number >= PLAYER_COUNT)
+  {
+    printf("ERROR: player number greater than %d\n", PLAYER_COUNT);
+    exit(1);
+  }
+
+  playerPosition[number][0] = x;
+  playerPosition[number][1] = y;
+  playerPosition[number][2] = z;
+  playerPosition[number][3] = playerroty;
+  playerVisible[number] = 1;
+}
+
+/* move player to a new position xyz with rotation rotx,roty,rotz */
+void setPlayerPosition(int number, float x, float y, float z, float playerroty)
+{
+  if (number >= PLAYER_COUNT)
+  {
+    printf("ERROR: player number greater than %d\n", PLAYER_COUNT);
+    exit(1);
+  }
+
+  playerPosition[number][0] = x;
+  playerPosition[number][1] = y;
+  playerPosition[number][2] = z;
+  playerPosition[number][3] = playerroty;
+}
+
+/* turn off drawing for player number */
+void hidePlayer(int number)
+{
+  if (number >= PLAYER_COUNT)
+  {
+    printf("ERROR: player number greater than %d\n", PLAYER_COUNT);
+    exit(1);
+  }
+  playerVisible[number] = 0;
+}
+
+/* turn on drawing for player number */
+void showPlayer(int number)
+{
+  if (number >= PLAYER_COUNT)
+  {
+    printf("ERROR: player number greater than %d\n", PLAYER_COUNT);
+    exit(1);
+  }
+  playerVisible[number] = 1;
+}
 
 /* set all mob location, rotation, and visibility values to zero */
 void initMobArray()
@@ -93,6 +172,7 @@ void setMobPosition(int number, float x, float y, float z, float mobroty)
   mobPosition[number][1] = y;
   mobPosition[number][2] = z;
   mobPosition[number][3] = mobroty;
+  mobflag[number] = 1;
 }
 
 /* turn off drawing for mob number */
@@ -331,6 +411,7 @@ void display (void)
 {
   GLfloat skyblue[]  = {0.52, 0.74, 0.84, 1.0};
   GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
+  GLfloat red[]   = {1.0, 0.0, 0.0, 1.0};
   GLfloat gray[] = {0.3, 0.3, 0.3, 1.0};
   GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
   int i, j, k;
@@ -401,6 +482,29 @@ void display (void)
       /* white eyes */
       glRotatef(mobPosition[i][3], 0.0, 1.0, 0.0);
       glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
+      glTranslatef(0.3, 0.1, 0.3);
+      glutSolidSphere(0.1, 4, 4);
+      glTranslatef(-0.6, 0.0, 0.0);
+      glutSolidSphere(0.1, 4, 4);
+      glPopMatrix();
+    }
+  }
+
+  /* draw players in the world */
+  for(i=0; i<PLAYER_COUNT; i++)
+  {
+    if (playerVisible[i] == 1)
+    {
+      glPushMatrix();
+      /* black body */
+      glTranslatef(playerPosition[i][0]+0.5, playerPosition[i][1]+0.5,
+	  playerPosition[i][2]+0.5);
+      glMaterialfv(GL_FRONT, GL_AMBIENT, white);
+      glMaterialfv(GL_FRONT, GL_DIFFUSE, gray);
+      glutSolidSphere(0.5, 8, 8);
+      /* white eyes */
+      glRotatef(playerPosition[i][3], 0.0, 1.0, 0.0);
+      glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);
       glTranslatef(0.3, 0.1, 0.3);
       glutSolidSphere(0.1, 4, 4);
       glTranslatef(-0.6, 0.0, 0.0);
@@ -508,6 +612,7 @@ void keyboard(unsigned char key, int x, int y)
       glutPostRedisplay();
       break;
     case 'w':		// forward motion
+      player_flag[0] = 1;
       oldvpx = vpx;
       oldvpy = vpy;
       oldvpz = vpz;
@@ -522,6 +627,7 @@ void keyboard(unsigned char key, int x, int y)
       glutPostRedisplay();
       break;
     case 's':		// backward motion
+      player_flag[0] = 1;
       oldvpx = vpx;
       oldvpy = vpy;
       oldvpz = vpz;
@@ -536,6 +642,7 @@ void keyboard(unsigned char key, int x, int y)
       glutPostRedisplay();
       break;
     case 'a':		// strafe left motion
+      player_flag[0] = 1;
       oldvpx = vpx;
       oldvpy = vpy;
       oldvpz = vpz;
@@ -546,6 +653,7 @@ void keyboard(unsigned char key, int x, int y)
       glutPostRedisplay();
       break;
     case 'd':		// strafe right motion
+      player_flag[0] = 1;
       oldvpx = vpx;
       oldvpy = vpy;
       oldvpz = vpz;
@@ -659,9 +767,25 @@ void graphicsInit(int *argc, char **argv)
       testWorld = 1;
     if (strcmp(argv[i],"-fps") == 0)
       fps = 1;
+    if (strcmp(argv[i],"-client") == 0)
+    {
+      netClient = 1;
+      server_socket = client_setup();
+      while(1)
+      {
+        printf("trying...\n");
+        if(get_visible_world(server_socket) == 0) break;
+      }
+      printf("ha! out.\n");
+    }
+    if (strcmp(argv[i],"-server") == 0)
+    {
+      netServer = 1;
+      server_socket = server_setup();
+    }
     if (strcmp(argv[i],"-help") == 0)
     {
-      printf("Usage: a2 [-full] [-drawall] [-testworld] [-fps]\n");
+      printf("Usage: a4 [-full] [-drawall] [-testworld] [-fps] [-client] [-server]\n");
       exit(0);
     }
   }
@@ -692,6 +816,7 @@ void graphicsInit(int *argc, char **argv)
 
 
   /* initialize mob array to empty */
+  initPlayerArray();
   initMobArray();
 }
 

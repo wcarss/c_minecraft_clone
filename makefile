@@ -8,3 +8,5 @@ ubuntu: src/ include/
 
 clean:
 	rm -rf a3
+	rm -rf *.o
+	cd src; make clean
