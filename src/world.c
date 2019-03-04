@@ -2,6 +2,7 @@
 #include "visibility.h"
 #include "engine.h"
 #include "world.h"
+#include <stdlib.h>
 
 /* Takes a number and truncs it into the bounds provided. */
 double bounds(double number, double low, double high)
@@ -27,7 +28,7 @@ void perlin(int low, int high, int type)
   int level = (high + low)/2;
   int scale = level - low;
 
-  for(x = 0; x <= WORLDX; x++)
+  for(x = 0; x < WORLDX; x++)
   {
     for(z = 0; z < WORLDZ; z++)
     {

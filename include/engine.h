@@ -81,6 +81,6 @@ int fps;
 /* flag to indicate removal of cube the viewer is facing */
 extern int displayAllCubes;
 extern int dig;
-extern int digflag[3];
+extern int digflag[4];
 extern int mobflag[MOB_COUNT];
 #endif

@@ -1,5 +1,5 @@
 #ifndef _PERLIN
-#define PERLIN
+#define _PERLIN
 /* File written by Ken Perlin, taken from Paul Bourke's website at http://local.wasp.uwa.edu.au/~pbourke/texture_colour/perlin/, used by Wyatt Carss on January 28th, 2011. */
 
 #define B 0x100

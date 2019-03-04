@@ -57,7 +57,7 @@ int player_flag[PLAYER_COUNT] = {0};
 int clouds_flag = 0;
 /* flag indicating the user wants the cube in front of them removed */
 int dig = 0;
-int digflag[3];
+int digflag[4];
 /***************/
 
 

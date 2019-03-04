@@ -1,5 +1,6 @@
 #include "engine.h"
 #include "test_world.h"
+#include <stdlib.h>
 
 void sample_mob_code()
 {  /* sample code showing the position and rotation controls */

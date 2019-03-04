@@ -1,5 +1,5 @@
 #ifndef _VISIBILITY
-#define VISIBILITY
+#define _VISIBILITY
 float frustum[6][4];
 
 int CubeInFrustum( float x, float y, float z, float size );
