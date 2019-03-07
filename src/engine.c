@@ -41,6 +41,8 @@ int fps = 0;			// turn on frame per second output
 /* list of cubes to display */
 int displayList[MAX_DISPLAY_LIST][3];
 int displayCount = 0;		// count of cubes in displayList[][]
+int totalDisplayList[MAX_DISPLAY_LIST][3];
+int totalDisplayCount = 0;
 
 /* list of mobs - number of mobs, xyz values and rotation about y */
 float mobPosition[MOB_COUNT][4];
@@ -262,6 +264,22 @@ int addDisplayList(int x, int y, int z)
   return displayCount;
 }
 
+int addTotalDisplayList(int x, int y, int z)
+{
+  totalDisplayList[totalDisplayCount][0] = x;
+  totalDisplayList[totalDisplayCount][1] = y;
+  totalDisplayList[totalDisplayCount][2] = z;
+  totalDisplayCount++;
+  if (totalDisplayCount > MAX_DISPLAY_LIST)
+  {
+    printf("You have put more items in the display list then there are\n");
+    printf("cubes in the world. Set displayCount = 0 at some point.\n");
+    exit(1);
+  }
+  //printf("addTotalDisplayList total display count: %i\n", totalDisplayCount);
+  return totalDisplayCount;
+}
+
 
 
 /*  Initialize material property and light source.  */
@@ -310,8 +328,6 @@ void init (void)
 }
 
 /* draw cube in world[i][j][k] */
-void drawCube(int i, int j, int k)
-{
   GLfloat blue[]  = {0.0, 0.0, 1.0, 1.0};
   GLfloat red[]   = {1.0, 0.0, 0.0, 1.0};
   GLfloat green[] = {0.0, 1.0, 0.0, 1.0};
@@ -333,73 +349,74 @@ void drawCube(int i, int j, int k)
   GLfloat dyellow[]   = {0.5, 0.5, 0.0, 1.0};
   GLfloat dpurple[]   = {0.5, 0.0, 0.5, 1.0};
   GLfloat dorange[]   = {0.5, 0.32, 0.0, 1.0};
-
-
+void drawCube(int i, int j, int k)
+{
   /* select colour based on value in the world array */
-  glMaterialfv(GL_FRONT, GL_SPECULAR, white);
+  //glMaterialfv(GL_FRONT, GL_SPECULAR, white);
+  int val = world[i][j][k];
 
-  if (world[i][j][k] == GREEN)
+  if (val == GREEN)
   {
     glMaterialfv(GL_FRONT, GL_AMBIENT, dgreen);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, green);
   }
-  else if (world[i][j][k] == BLUE)
+  else if (val == BLUE)
   { 
     glMaterialfv(GL_FRONT, GL_AMBIENT, dblue);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, blue);
   }
-  else if (world[i][j][k] == RED)
+  else if (val == RED)
   {
     glMaterialfv(GL_FRONT, GL_AMBIENT, dred);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, red);
   }
-  else if (world[i][j][k] == BLACK)
-  {
-    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
-  }
-  else if (world[i][j][k] == WHITE)
+  // else if (val == BLACK)
+  // {
+  //   glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
+  // }
+  else if (val == WHITE)
   {
     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
   }
-  else if (world[i][j][k] == PURPLE)
-  {
-    glMaterialfv(GL_FRONT, GL_AMBIENT, dpurple);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, purple);
-  }
-  else if (world[i][j][k] == ORANGE)
-  { 
-    glMaterialfv(GL_FRONT, GL_AMBIENT, dorange);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, orange);
-  }
-  else if (world[i][j][k] == COAL)
+  // else if (val == PURPLE)
+  // {
+  //   glMaterialfv(GL_FRONT, GL_AMBIENT, dpurple);
+  //   glMaterialfv(GL_FRONT, GL_DIFFUSE, purple);
+  // }
+  // else if (val == ORANGE)
+  // { 
+  //   glMaterialfv(GL_FRONT, GL_AMBIENT, dorange);
+  //   glMaterialfv(GL_FRONT, GL_DIFFUSE, orange);
+  // }
+  else if (val == COAL)
   { 
     glMaterialfv(GL_FRONT, GL_AMBIENT, dcoal);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, coal);
   }
-  else if (world[i][j][k] == STONE)
+  else if (val == STONE)
   { 
     glMaterialfv(GL_FRONT, GL_AMBIENT, dstone);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, stone);
   }
-  else if (world[i][j][k] == BROWN)
+  else if (val == BROWN)
   { 
     glMaterialfv(GL_FRONT, GL_AMBIENT, dbrown);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, brown);
   }
-  else if (world[i][j][k] == YELLOW)
-  { 
-    glMaterialfv(GL_FRONT, GL_AMBIENT, dyellow);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, yellow);
-  }
-  else
-  {
-    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
-  }
+  // else if (val == YELLOW)
+  // { 
+  //   glMaterialfv(GL_FRONT, GL_AMBIENT, dyellow);
+  //   glMaterialfv(GL_FRONT, GL_DIFFUSE, yellow);
+  // }
+  //else
+  //{
+  //  glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
+  //}
 
   glPushMatrix ();
   /* offset cubes by 0.5 so the centre of the */
   /* cube falls in the centre of the world array */ 
-  glTranslatef(i + 0.5, j + 0.5, k + 0.5);
+  glTranslatef(i, j, k);
   glutSolidCube(1.0);
   glPopMatrix ();
 }
@@ -407,16 +424,36 @@ void drawCube(int i, int j, int k)
 
 
 /* called each time the world is redrawn */
+  GLfloat skyblue[]  = {0.52, 0.74, 0.84, 1.0};
+  GLfloat gray[] = {0.3, 0.3, 0.3, 1.0};
 void display (void)
 {
-  GLfloat skyblue[]  = {0.52, 0.74, 0.84, 1.0};
-  GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
-  GLfloat red[]   = {1.0, 0.0, 0.0, 1.0};
-  GLfloat gray[] = {0.3, 0.3, 0.3, 1.0};
-  GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
   int i, j, k;
+  static int recalc = 0;
 
-  buildDisplayList();
+  /* used to calculate frames per second */
+  static int frame=0, time, timebase=0;
+  /* frame per second calculation */
+  /* don't change the following routine */
+  /* http://www.lighthouse3d.com/opengl/glut/index.php?fps */
+  if (fps == 1)
+  {
+    frame++;
+    time=glutGet(GLUT_ELAPSED_TIME);
+    if (time - timebase > 1000)
+    {
+      printf("FPS:%4.2f\n", frame*1000.0/(time-timebase));
+      timebase = time;    
+      frame = 0;
+    }
+  }
+
+  if (recalc == 0 || recalc > 300) {
+    buildDisplayList();
+    recalc = 0;
+  }
+  recalc += 1;
+
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   /* position viewpoint based on mouse rotation and keyboard 
@@ -517,17 +554,17 @@ void display (void)
   if (displayAllCubes == 1)
   {
     /* draw all cubes */
-    for(i=0; i<WORLDX; i++)
+    for(i=0; i < WORLDX; i++)
     {
-      for(j=0; j<WORLDY; j++)
+      for(j=0; j < WORLDY; j++)
       {
-	for(k=0; k<WORLDZ; k++)
-	{
-	  if (world[i][j][k] != 0)
-	  {
-	    drawCube(i, j, k);
-	  }
-	}
+        for(k=0; k < WORLDZ; k++)
+        {
+          if (world[i][j][k] != 0)
+          {
+            drawCube(i, j, k);
+          }
+        }
       }
     }
   }
@@ -536,11 +573,13 @@ void display (void)
     /* draw only the cubes in the displayList */
     /* these should have been selected in the update function */
 
-    for(i=0; i<displayCount; i++)
+    for(i = 0; i < displayCount; i++)
     {
-      drawCube(displayList[i][0],
-	  displayList[i][1],
-	  displayList[i][2]);
+      drawCube(
+        displayList[i][0],
+        displayList[i][1],
+        displayList[i][2]
+      );
     }
   }
 

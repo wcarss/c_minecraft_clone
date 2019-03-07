@@ -184,6 +184,8 @@ int main(int argc, char* argv[])
   }
 
   trimout();
+  buildTotalDisplayList();
+
   /* starts the graphics processing loop */
   glutMainLoop();
   

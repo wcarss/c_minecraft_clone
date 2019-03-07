@@ -48,6 +48,7 @@ void getOldViewPosition(float *, float *, float *);
 void getViewOrientation(float *, float *, float *);
 
 int addDisplayList(int, int, int);
+int addTotalDisplayList(int, int, int);
 
 void initPlayerArray();
 void createPlayer(int number, float x, float y, float z, float playerroty);
@@ -70,7 +71,9 @@ extern int flycontrol;
 extern int testWorld;
 /* list and count of polygons to be displayed, set during culling */
 int displayList[MAX_DISPLAY_LIST][3];
+int totalDisplayList[MAX_DISPLAY_LIST][3];
 int displayCount;
+int totalDisplayCount;
 /* flag to print out frames per second */
 extern float mobPosition[MOB_COUNT][4];
 extern float playerPosition[MOB_COUNT][4];

@@ -30,14 +30,14 @@ void trimout()
     {
       for(z = 0; z < WORLDZ; z++)
       {
-	if(you_can_see(x,y,z))
-	{
-	  visible[x][y][z] = 1;
-	}
-	else
-	{
-	  visible[x][y][z] = 0;
-	}
+        if(you_can_see(x,y,z))
+        {
+          visible[x][y][z] = 1;
+        }
+        else
+        {
+          visible[x][y][z] = 0;
+        }
 
         if(y == 18 && (x == WORLDX-1 || z == WORLDZ-1 || x == 0 || z == 0))
           visible[x][y][z] = 1;
@@ -58,30 +58,16 @@ void trimout()
 /* write your cube culling code here */
 void buildDisplayList()
 {
-  /* used to calculate frames per second */
-  static int frame=0, time, timebase=0;
-  int i, j, k;
-
+  int i, j, k, l;
   displayCount = 0;
-  for(i=0; i<WORLDX; i++)
-    for(j=0; j<WORLDY; j++)
-      for(k=0; k<WORLDZ; k++)
-	if (visible[i][j][k] == 1 && world[i][j][k] != 0 && CubeInFrustum(i,j,k,0.5))
-	  addDisplayList(i, j, k);
 
+  for(i = 0; i < totalDisplayCount; i++) {
+    j = totalDisplayList[i][0];
+    k = totalDisplayList[i][1];
+    l = totalDisplayList[i][2];
 
-  /* frame per second calculation */
-  /* don't change the following routine */
-  /* http://www.lighthouse3d.com/opengl/glut/index.php?fps */
-  if (fps == 1)
-  {
-    frame++;
-    time=glutGet(GLUT_ELAPSED_TIME);
-    if (time - timebase > 1000)
-    {
-      printf("FPS:%4.2f\n", frame*1000.0/(time-timebase));
-      timebase = time;		
-      frame = 0;
+    if (CubeInFrustum(j, k, l, 0.5)) {
+      addDisplayList(j, k, l);
     }
   }
 
@@ -89,38 +75,72 @@ void buildDisplayList()
   glutPostRedisplay();
 }
 
+void buildTotalDisplayList()
+{
+  int i, j, k;
+
+  totalDisplayCount = 0;
+  for(i = 0; i < WORLDX; i++)
+    for(j = 0; j < WORLDY; j++)
+      for(k = 0; k < WORLDZ; k++)
+        if (visible[i][j][k] == 1 && world[i][j][k] != 0)
+          addTotalDisplayList(i, j, k);
+
+  printf("total display count: %i\n", totalDisplayCount);
+}
+
 int CubeInFrustum( float x, float y, float z, float size )
 {
   int p;
-  int c;
-  int c2 = 0;
   int v = -2;
+
+  float xm = 0;
+  float ym = 0;
+  float zm = 0;
+
+  float xp = 0;
+  float yp = 0;
+  float zp = 0;
 
   for( p = 0; p < 6; p++ )
   {
-    c = 0;
-    if( frustum[p][0] * (x - size) + frustum[p][1] * (y - size) + frustum[p][2] * (z - size) + frustum[p][3] >v)
-      c++;
-    if( frustum[p][0] * (x + size) + frustum[p][1] * (y - size) + frustum[p][2] * (z - size) + frustum[p][3] >v)
-      c++;
-    if( frustum[p][0] * (x - size) + frustum[p][1] * (y + size) + frustum[p][2] * (z - size) + frustum[p][3] >v)
-      c++;
-    if( frustum[p][0] * (x + size) + frustum[p][1] * (y + size) + frustum[p][2] * (z - size) + frustum[p][3] >v)
-      c++;
-    if( frustum[p][0] * (x - size) + frustum[p][1] * (y - size) + frustum[p][2] * (z + size) + frustum[p][3] >v)
-      c++;
-    if( frustum[p][0] * (x + size) + frustum[p][1] * (y - size) + frustum[p][2] * (z + size) + frustum[p][3] >v)
-      c++;
-    if( frustum[p][0] * (x - size) + frustum[p][1] * (y + size) + frustum[p][2] * (z + size) + frustum[p][3] >v)
-      c++;
-    if( frustum[p][0] * (x + size) + frustum[p][1] * (y + size) + frustum[p][2] * (z + size) + frustum[p][3] >v)
-      c++;
-    if( c == 0 )
-      return 0;
-    if( c == 8 )
-      c2++;
+    xm = frustum[p][0] * (x - size);
+    ym = frustum[p][1] * (y - size);
+    zm = frustum[p][2] * (z - size);
+
+    xp = frustum[p][0] * (x + size);
+    yp = frustum[p][1] * (y + size);
+    zp = frustum[p][1] * (z + size);
+
+    if( xm + ym + zm + frustum[p][3] > v){
+      continue;
+    }
+    if( xp + ym + zm + frustum[p][3] > v) {
+      continue;
+    }
+    if( xm + yp + zm + frustum[p][3] > v) {
+      continue;
+    }
+    if( xp + yp + zm + frustum[p][3] > v) {
+      continue;
+    }
+    if( xm + ym + zp + frustum[p][3] > v) {
+      continue;
+    }
+    if( xp + ym + zp + frustum[p][3] > v) {
+      continue;
+    }
+    if( xm + yp + zp + frustum[p][3] > v) {
+      continue;
+    }
+    if( xp + yp + zp + frustum[p][3] > v) {
+      continue;
+    }
+
+    return 0;
   }
-  return (c2 == 6) ? 2 : 1;
+
+  return 1;
 }
 
 

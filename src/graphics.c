@@ -52,6 +52,8 @@ int netServer = 0;		// network server flag, is server when = 1
 	/* list of cubes to display */
 int displayList[MAX_DISPLAY_LIST][3];
 int displayCount = 0;		// count of cubes in displayList[][]
+int totalDisplayList[MAX_DISPLAY_LIST][3];
+int totalDisplayCount = 0;
 
 	/* list of mobs - number of mobs, xyz values and rotation about y */
 float mobPosition[MOB_COUNT][4];
@@ -288,7 +290,6 @@ void init (void)
 }
 
 	/* draw cube in world[i][j][k] */
-void drawCube(int i, int j, int k) {
 GLfloat blue[]  = {0.0, 0.0, 1.0, 1.0};
 GLfloat red[]   = {1.0, 0.0, 0.0, 1.0};
 GLfloat green[] = {0.0, 1.0, 0.0, 1.0};
@@ -305,45 +306,46 @@ GLfloat dyellow[]   = {0.5, 0.5, 0.0, 1.0};
 GLfloat dpurple[]   = {0.5, 0.0, 0.5, 1.0};
 GLfloat dorange[]   = {0.5, 0.32, 0.0, 1.0};
 
-
+void drawCube(int i, int j, int k) {
 		/* select colour based on value in the world array */
-   glMaterialfv(GL_FRONT, GL_SPECULAR, white);
+   //glMaterialfv(GL_FRONT, GL_SPECULAR, white);
+   int val = world[i][j][k];
 
-   if (world[i][j][k] == 1) {
+   if (val == 1) {
       glMaterialfv(GL_FRONT, GL_AMBIENT, dgreen);
       glMaterialfv(GL_FRONT, GL_DIFFUSE, green);
    }
-   else if (world[i][j][k] == 2) { 
+   else if (val == 2) { 
       glMaterialfv(GL_FRONT, GL_AMBIENT, dblue);
       glMaterialfv(GL_FRONT, GL_DIFFUSE, blue);
    }
-   else if (world[i][j][k] == 3) {
+   else if (val == 3) {
       glMaterialfv(GL_FRONT, GL_AMBIENT, dred);
       glMaterialfv(GL_FRONT, GL_DIFFUSE, red);
    }
-   else if (world[i][j][k] == 4) {
+   else if (val == 4) {
       glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
    }
-   else if (world[i][j][k] == 5) {
+   else if (val == 5) {
       glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
    }
-   else if (world[i][j][k] == 6) {
-      glMaterialfv(GL_FRONT, GL_AMBIENT, dpurple);
-      glMaterialfv(GL_FRONT, GL_DIFFUSE, purple);
-   }
-   else if (world[i][j][k] == 7) { 
-      glMaterialfv(GL_FRONT, GL_AMBIENT, dorange);
-      glMaterialfv(GL_FRONT, GL_DIFFUSE, orange);
-   }
-   else {
-      glMaterialfv(GL_FRONT, GL_AMBIENT, dyellow);
-      glMaterialfv(GL_FRONT, GL_DIFFUSE, yellow);
-   }
+   // else if (val == 6) {
+   //    glMaterialfv(GL_FRONT, GL_AMBIENT, dpurple);
+   //    glMaterialfv(GL_FRONT, GL_DIFFUSE, purple);
+   // }
+   // else if (val == 7) { 
+   //    glMaterialfv(GL_FRONT, GL_AMBIENT, dorange);
+   //    glMaterialfv(GL_FRONT, GL_DIFFUSE, orange);
+   // }
+   // else {
+   //    glMaterialfv(GL_FRONT, GL_AMBIENT, dyellow);
+   //    glMaterialfv(GL_FRONT, GL_DIFFUSE, yellow);
+   // }
 
    glPushMatrix ();
 	/* offset cubes by 0.5 so the centre of the */
 	/* cube falls in the centre of the world array */ 
-   glTranslatef(i + 0.5, j + 0.5, k + 0.5);
+   glTranslatef(i, j, k);
    glutSolidCube(1.0);
    glPopMatrix ();
 }
@@ -669,7 +671,7 @@ void mouse(int button, int state, int x, int y) {
 
 
 	/* initilize graphics information and mob data structure */
-void gradphicsInit(int *argc, char **argv) {
+void graphicsInit(int *argc, char **argv) {
 int i, fullscreen;
 	/* set GL window information */
    glutInit(argc, argv);
