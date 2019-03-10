@@ -68,7 +68,7 @@ void buildDisplayList()
     k = totalDisplayList[i][1];
     l = totalDisplayList[i][2];
 
-    if (CubeInFrustum(j, k, l, 0.5)) {
+    if (CubeInFrustum(j, k, l, 0.5) && world[j][k][l] != 0) {
       addDisplayList(j, k, l);
     }
   }

@@ -64,6 +64,7 @@ void showMob(int);
 void update();
 void collisionResponse();
 void buildDisplayList();
+void buildTotalDisplayList();
 
 /* flag which is set to 1 when flying behaviour is desired */
 extern int flycontrol;
@@ -74,6 +75,7 @@ int displayList[MAX_DISPLAY_LIST][3];
 int totalDisplayList[MAX_DISPLAY_LIST][3];
 int displayCount;
 int totalDisplayCount;
+int targetx, targety, targetz;
 /* flag to print out frames per second */
 extern float mobPosition[MOB_COUNT][4];
 extern float playerPosition[MOB_COUNT][4];

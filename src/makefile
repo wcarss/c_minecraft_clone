@@ -5,7 +5,7 @@ CFLAGS = -Wall -std=c99 -g -pedantic
 
 OSX = -F/System/Library/Frameworks -framework OpenGL -framework GLUT -lm
 #OSX = -F/System/Library/Frameworks -framework OPENGL -L/usr/local/lib/ -lGLUT -lm
-UBUNTU = -lm -lGLU -lglut -lrt -DUBUNTU
+UBUNTU = -lm -lGL -lGLU -lglut -lrt -DUBUNTU
 
 default: ubuntu
 

@@ -73,15 +73,15 @@ void mob_action()
   static float mobz[4] = {45,45,45,45};
   static float mobr[4] = {0,90,180,270};
   int outcome;
-  float old_mobx, old_moby;
+  //float old_mobx, old_moby;
 
   int i;
   for(i = 0; i < 4; i++)
   {
 //    do
 //    {
-      old_mobx = mobx[i];
-      old_moby = moby[i];
+  //    old_mobx = mobx[i];
+  //    old_moby = moby[i];
       outcome = rand()%10;
       if(outcome > 1)
         mobx[i] += 1;

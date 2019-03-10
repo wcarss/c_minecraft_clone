@@ -22,6 +22,7 @@ GLuint   textureID[1];
 /* viewpoint coordinates */
 float vpx = -50.0, vpy = -80.0, vpz = -50.0;
 float oldvpx, oldvpy, oldvpz;
+int targetx = 0, targety = 0, targetz = 0;
 
 /* mouse direction coordiates */
 float mvx = 0.0, mvy = 45.0, mvz = 0.0;
@@ -403,6 +404,25 @@ void drawCube(int i, int j, int k)
     glMaterialfv(GL_FRONT, GL_AMBIENT, dbrown);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, brown);
   }
+
+  if (targetx == i && targety == j && targetz == k)
+  {
+    if (lineDrawing == 0) {
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, black);
+    glPushMatrix ();
+    /* offset cubes by 0.5 so the centre of the */
+    /* cube falls in the centre of the world array */ 
+    glTranslatef(i, j, k);
+    glutSolidCube(1.2);
+    glPopMatrix ();
+
+    if (lineDrawing == 0) {
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+  }
   // else if (val == YELLOW)
   // { 
   //   glMaterialfv(GL_FRONT, GL_AMBIENT, dyellow);
@@ -429,7 +449,6 @@ void drawCube(int i, int j, int k)
 void display (void)
 {
   int i, j, k;
-  static int recalc = 0;
 
   /* used to calculate frames per second */
   static int frame=0, time, timebase=0;

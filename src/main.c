@@ -118,31 +118,59 @@ void update()
 
   /* sample use of the dig flag, it is set equal to 1 when the user */
   /*  presses the space bar, you need to reset it to 0 */
-  if (dig == 1)
-  {
-    digflag[0] = 1;
     getViewOrientation(&mx,&my,&mz);
     getViewPosition(&vx,&vy,&vz);
-
-    vx *= -1;
-    vy *= -1;
-    vz *= -1;
 
     while(mx >= 360) mx -= 360;
     while(my >= 360) my -= 360;
     while(mz >= 360) mz -= 360;
+
+    mx = mx * 3.14159/180;
+    my = my * 3.14159/180;
+    mz = mz * 3.14159/180;
+
+    vx *= -1;
+    vy *= -1;
+    vy += 1;
+    vz *= -1;
+
     //printf("dig: mx, my, mz: %f, %f, %f\t", mx, my, mz);
     printf("new dig\n");
-    printf("\trot: mx, my, mz: %f, %f, %f\n", mx, my, mz);
-    printf("\tpos: vx, vy, vz: %f, %f, %f\n", vx, vy, vz);
-    rx = vx+sin(my)*cos(mx);//vx+sin(my)*cos(mx) * 1;
-    ry = vy-sin(mx);//(vy+sin(mx) * 1);
-    rz = vz+(-1 * cos(my))*cos(mx);//vz+cos(my)*cos(mx) * 1;
+    printf("\trot: mx, my, mz: %f, %f, %f\n", mx*180/3.14159, my*180/3.14159, mz*180/3.14159);
+    printf("\tpos: vx, vy, vz: %f, %f, %f\n", round(vx), round(vy), round(vz));
+    float unitx = 1.4;
+    float unity = 1.4;
+    float unitz = 1.4;
+    unitx *= sin(my);
+    unity *= 1;
+    unitz *= -1*cos(my);
+    printf("\tyrot: (%f, %f, %f)\n", unitx, unity, unitz);
+    unitx *= cos(mx);
+    unity *= -sin(mx);
+    unitz *= cos(mx);
+    printf("\txrot: (%f, %f, %f)\n", unitx, unity, unitz);
+
+    //rx = round(vx)+(1.4*sin(my)*cos(mx));//vx+sin(my)*cos(mx) * 1;
+    //ry = round(vy)-(1.4*sin(mx));//(vy+sin(mx) * 1);
+    //rz = round(vz)+(1.4*(-1 * cos(my))*cos(mx));//vz+cos(my)*cos(mx) * 1;
+    rx = round(vx)+unitx;//(1.4*sin(my)*cos(mx));//vx+sin(my)*cos(mx) * 1;
+    ry = round(vy)+unity;//-(1.4*sin(mx));//(vy+sin(mx) * 1);
+    rz = round(vz)+unitz;//+(1.4*(-1 * cos(my))*cos(mx));//vz+cos(my)*cos(mx) * 1;
+    printf("\told t: %d, %d, %d\n", targetx, targety, targetz);
+    targetx = (int)round(rx);
+    targety = (int)round(ry);
+    targetz = (int)round(rz);
+    printf("\tnew t: %d, %d, %d\n", targetx, targety, targetz);
     //printf("got: rx, ry, rz: %f, %f, %f\t", rx, ry, rz);
     prev = world[(int)round(rx)][(int)round(ry)][(int)round(rz)];
+  if (dig == 1) {
+    digflag[0] = 1;
+
     world[(int)round(rx)][(int)round(ry)][(int)round(rz)] = EMPTY;
     trimout();
-//    buildDisplayList();
+    buildDisplayList();
+//    addTotalDisplayList((int)round(rx), (int)round(ry), (int)round(rz));
+//    addDisplayList((int)round(rx), (int)round(ry), (int)round(rz));
     digflag[1] = -1*(int)round(rx);
     digflag[2] = -1*(int)round(ry);
     digflag[3] = -1*(int)round(rz);
