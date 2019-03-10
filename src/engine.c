@@ -448,11 +448,7 @@ void display (void)
     }
   }
 
-  if (recalc == 0 || recalc > 300) {
-    buildDisplayList();
-    recalc = 0;
-  }
-  recalc += 1;
+  buildDisplayList();
 
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -593,7 +589,7 @@ void reshape(int w, int h)
   glViewport (0, 0, (GLsizei) w, (GLsizei) h);
   glMatrixMode (GL_PROJECTION);
   glLoadIdentity ();
-  gluPerspective(45.0, (GLfloat)w/(GLfloat)h, 0.1, 300.0);
+  gluPerspective(60.0, (GLfloat)w/(GLfloat)h, 0.1, 100.0);
   glMatrixMode (GL_MODELVIEW);
   glLoadIdentity ();
 }
@@ -754,14 +750,24 @@ void loadTexture()
   fclose(fp);
 }
 
-void motion(int x, int y)
-{
-  static float oldx, oldy;
-  mvx += (float) y - oldy;
-  mvy += (float) x - oldx;
-  oldx = x;
-  oldy = y;
-  glutPostRedisplay();
+void motion(int x, int y) {
+static float oldx = -10000, oldy = -10000;
+   if (oldx == -10000) {
+      printf("resetting oldx\n");
+      oldx = x;
+   }
+   if (oldy == -10000) {
+      printf("resetting oldy\n");
+      oldy = y;
+   }
+
+   mvx += (float) y - oldy;
+   if (mvx > 90) mvx = 90;
+   if (mvx < -90) mvx = -90;
+   mvy += (float) x - oldx;
+   oldx = x;
+   oldy = y;
+   glutPostRedisplay();
 
 }
 

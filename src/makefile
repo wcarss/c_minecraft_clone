@@ -4,6 +4,7 @@ INCLUDE_FILES = $(INCLUDE)/engine.h $(INCLUDE)/perlin.h $(INCLUDE)/visibility.h 
 CFLAGS = -Wall -std=c99 -g -pedantic
 
 OSX = -F/System/Library/Frameworks -framework OpenGL -framework GLUT -lm
+#OSX = -F/System/Library/Frameworks -framework OPENGL -L/usr/local/lib/ -lGLUT -lm
 UBUNTU = -lm -lGLU -lglut -lrt -DUBUNTU
 
 default: ubuntu

@@ -61,6 +61,8 @@ void buildDisplayList()
   int i, j, k, l;
   displayCount = 0;
 
+  ExtractFrustum();
+
   for(i = 0; i < totalDisplayCount; i++) {
     j = totalDisplayList[i][0];
     k = totalDisplayList[i][1];
@@ -92,7 +94,7 @@ void buildTotalDisplayList()
 int CubeInFrustum( float x, float y, float z, float size )
 {
   int p;
-  int v = -2;
+  int v = -1;
 
   float xm = 0;
   float ym = 0;

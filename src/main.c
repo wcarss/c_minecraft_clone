@@ -64,6 +64,7 @@ void update()
   static int y = 0;
   int z = 50;
   int now;
+  int prev = 0;
   //char buf[MESSAGE_LENGTH];
 
   if(netClient && netServer) fprintf(stderr, "error: client and server at once\n");
@@ -130,19 +131,24 @@ void update()
     while(mx >= 360) mx -= 360;
     while(my >= 360) my -= 360;
     while(mz >= 360) mz -= 360;
-    printf("dig: mx, my, mz: %f, %f, %f\t", mx, my, mz);
-    printf("pos: vx, vy, vz: %f, %f, %f\t", vx, vy, vz);
+    //printf("dig: mx, my, mz: %f, %f, %f\t", mx, my, mz);
+    printf("new dig\n");
+    printf("\trot: mx, my, mz: %f, %f, %f\n", mx, my, mz);
+    printf("\tpos: vx, vy, vz: %f, %f, %f\n", vx, vy, vz);
     rx = vx+sin(my)*cos(mx);//vx+sin(my)*cos(mx) * 1;
-    rz = vz+(-1 * cos(my))*cos(mx);//vz+cos(my)*cos(mx) * 1;
     ry = vy-sin(mx);//(vy+sin(mx) * 1);
-    printf("got: rx, ry, rz: %f, %f, %f\t", rx, ry, rz);
+    rz = vz+(-1 * cos(my))*cos(mx);//vz+cos(my)*cos(mx) * 1;
+    //printf("got: rx, ry, rz: %f, %f, %f\t", rx, ry, rz);
+    prev = world[(int)round(rx)][(int)round(ry)][(int)round(rz)];
     world[(int)round(rx)][(int)round(ry)][(int)round(rz)] = EMPTY;
     trimout();
 //    buildDisplayList();
     digflag[1] = -1*(int)round(rx);
     digflag[2] = -1*(int)round(ry);
     digflag[3] = -1*(int)round(rz);
-    printf("dug: rx, ry, rz: %d, %d, %d\n", -1*(int)round(rx), -1*(int)round(ry), -1*(int)round(rz));
+    printf("\tdug: rx, ry, rz: %f, %f, %f\n", rx, ry, rz);
+    printf("\trar: rx, ry, rz: %d, %d, %d\n", (int)round(rx), (int)round(ry), (int)round(rz));
+    printf("\tprevious value: %d\n", prev);
 
     dig = 0;
   }
