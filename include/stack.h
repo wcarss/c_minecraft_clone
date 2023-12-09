@@ -4,19 +4,19 @@
 #define _st(x) printf("Status is %d.\n", x);
 #define STACK_STRING_LENGTH 64
 
-struct _elmnt{
-	char str[STACK_STRING_LENGTH];
-	struct _elmnt *next;
-	struct _elmnt *prev;
+struct _elmnt {
+  char str[STACK_STRING_LENGTH];
+  struct _elmnt *next;
+  struct _elmnt *prev;
 };
 
 typedef struct _elmnt element;
 typedef element * Element;
 
-struct _stk{
-	Element head;
-	Element tail;
-	int size;
+struct _stk {
+  Element head;
+  Element tail;
+  int size;
 };
 
 typedef struct _stk stack;

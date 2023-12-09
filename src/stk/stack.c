@@ -6,26 +6,25 @@
 #include "stack.h"
 
 
-/* Stack Constructor 
- * Input: An existing, NULL stack pointer. 
+/* Stack Constructor
+ * Input: An existing, NULL stack pointer.
  * Output: 0 if success
  *	   1 if failure
  * Errors: malloc could fail.
  */
 int new_stack(Stack *s)
 {
-	*s = malloc(sizeof(stack));
-	
-	if(*s == NULL)
-	{
-		return 1; /* failure */
-	}
+  *s = malloc(sizeof(stack));
 
-	(*s)->head = NULL;
-	(*s)->tail = NULL;
-	(*s)->size = 0;
+  if (*s == NULL) {
+    return 1; /* failure */
+  }
 
-	return 0; /* success */
+  (*s)->head = NULL;
+  (*s)->tail = NULL;
+  (*s)->size = 0;
+
+  return 0; /* success */
 }
 
 
@@ -37,23 +36,22 @@ int new_stack(Stack *s)
  */
 int kill_stack(Stack *s)
 {
-	char str[64] = {0};
+  char str[64] = {0};
 
-	if(NULL == s)
-	{
-		return 1;
-	}
+  if (NULL == s) {
+    return 1;
+  }
 
-	while(pop(*s, str) != 2);
+  while (pop(*s, str) != 2);
 
-	(*s)->head = NULL;
-	(*s)->tail = NULL;
-	(*s)->size = 0;
+  (*s)->head = NULL;
+  (*s)->tail = NULL;
+  (*s)->size = 0;
 
-	free(*s);
-	*s = NULL;
+  free(*s);
+  *s = NULL;
 
-	return 0;
+  return 0;
 }
 
 
@@ -67,40 +65,35 @@ int kill_stack(Stack *s)
  */
 int push(Stack s, char *str)
 {
-	int result = 0;
+  int result = 0;
 
-	if(s == NULL) /* fail early */
-	{
-		return 1;
-	}
+  if (s == NULL) { /* fail early */
+    return 1;
+  }
 
-	if(s->tail == NULL)
-	{
-		/* if there is no tail, this element will be it.
-		   populate it with str, and
-		   set its prev and next to NULL
-		*/
-		result = new_element(&(s->tail), str, NULL, NULL);
-	}
-	else
-	{
-		/* insert new element at tail->next,
-		   populate it with str, and
-		   set prev to tail, next to NULL
-		*/
-		result = new_element(&(s->tail->next), str, s->tail, NULL);
-		s->tail = s->tail->next;
-	}
+  if (s->tail == NULL) {
+    /* if there is no tail, this element will be it.
+       populate it with str, and
+       set its prev and next to NULL
+    */
+    result = new_element(&(s->tail), str, NULL, NULL);
+  } else {
+    /* insert new element at tail->next,
+       populate it with str, and
+       set prev to tail, next to NULL
+    */
+    result = new_element(&(s->tail->next), str, s->tail, NULL);
+    s->tail = s->tail->next;
+  }
 
-	if(result == 1) /* if create failed */
-	{
-		return 1;
-	}
+  if (result == 1) { /* if create failed */
+    return 1;
+  }
 
-	/* increment # of elements */
-	(s->size)++; 
+  /* increment # of elements */
+  (s->size)++;
 
-	return 0;
+  return 0;
 }
 
 
@@ -117,33 +110,30 @@ int push(Stack s, char *str)
  */
 int pop(Stack s, char *str)
 {
-	int result = 0;
+  int result = 0;
 
-	if(s == NULL)
-	{
-		/* stack is null */
-		return 1;
-	}
+  if (s == NULL) {
+    /* stack is null */
+    return 1;
+  }
 
-	if(s->tail == NULL)
-	{
-		/* stack empty -- will happen during kill_stack. */
-		return 2;
-	}
+  if (s->tail == NULL) {
+    /* stack empty -- will happen during kill_stack. */
+    return 2;
+  }
 
-	/* save tail into e */
-	result = kill_element(str, &(s->tail)); 
+  /* save tail into e */
+  result = kill_element(str, &(s->tail));
 
-	if(result == 1 || str == NULL)
-	{
-		/* if kill failed */
-		return 1; 
-	}
+  if (result == 1 || str == NULL) {
+    /* if kill failed */
+    return 1;
+  }
 
-	/* decrease # of elements */
-	(s->size)--;
+  /* decrease # of elements */
+  (s->size)--;
 
-	return 0;
+  return 0;
 }
 
 
@@ -158,48 +148,43 @@ int pop(Stack s, char *str)
  */
 int peek(Stack s, char *str)
 {
-	if(s == NULL)
-	{
-		return 1;
-	}
+  if (s == NULL) {
+    return 1;
+  }
 
-	if(s->tail == NULL)
-	{
-		return 2; /* stack is empty -- will happen during kill_stack */
-	}
+  if (s->tail == NULL) {
+    return 2; /* stack is empty -- will happen during kill_stack */
+  }
 
-	if(str == NULL)
-	{
-		return 1; /* no space for str */
-	}
+  if (str == NULL) {
+    return 1; /* no space for str */
+  }
 
-	strcpy(str, s->tail->str);
+  strcpy(str, s->tail->str);
 
-	return 0;
+  return 0;
 }
 
 
 
-/* Quickly determines if a stack is empty or not 
+/* Quickly determines if a stack is empty or not
  * Input: An existing stack
- * Output: 0 if stack is nonempty 
+ * Output: 0 if stack is nonempty
  * 	   1 if stack does not exist
  * 	   1 if stack is empty
  * Errors: If the stack doesn't exist, cannot read
  */
 int is_empty(Stack s)
 {
-	if(s == NULL)
-	{
-		return 1;
-	}
+  if (s == NULL) {
+    return 1;
+  }
 
-	if(s->tail == NULL)
-	{
-		return 1;
-	}
+  if (s->tail == NULL) {
+    return 1;
+  }
 
-	return 0;
+  return 0;
 
 }
 
@@ -211,19 +196,18 @@ int is_empty(Stack s)
 */
 int stack_size(Stack s)
 {
-	if(s == NULL)
-	{
-		return -1;
-	}
+  if (s == NULL) {
+    return -1;
+  }
 
-	return s->size;
+  return s->size;
 }
 
 
 
 /* Element Constructor
- * Input: NULL Element pointer, 
- *	  string to populate element with, 
+ * Input: NULL Element pointer,
+ *	  string to populate element with,
  *	  prev and next ptrs
  * Output: 0 if success
  * 	   1 if failure
@@ -231,18 +215,17 @@ int stack_size(Stack s)
  */
 int new_element(Element *e, char *str, Element prev, Element next)
 {
-	*e = malloc(sizeof(element));
+  *e = malloc(sizeof(element));
 
-	if(*e == NULL)
-	{
-		return 1;
-	}
+  if (*e == NULL) {
+    return 1;
+  }
 
-	strcpy((*e)->str, str);
-	(*e)->prev = prev;
-	(*e)->next = next;
+  strcpy((*e)->str, str);
+  (*e)->prev = prev;
+  (*e)->next = next;
 
-	return 0;
+  return 0;
 }
 
 
@@ -256,34 +239,30 @@ int new_element(Element *e, char *str, Element prev, Element next)
  */
 int kill_element(char *str, Element *tail)
 {
-	if(tail == NULL || str == NULL)
-	{
-		return 1; /* failure */
-	}
+  if (tail == NULL || str == NULL) {
+    return 1; /* failure */
+  }
 
-	/* Copy away the element's contents */
-	strcpy(str, (*tail)->str);
+  /* Copy away the element's contents */
+  strcpy(str, (*tail)->str);
 
-	if((*tail)->prev != NULL)
-	{
-		/* If the tail is not the last element,
-			new tail is element beneath it
-		 	free the old tail
-			set new tail's next to NULL
-		*/
-		*tail = (*tail)->prev;
-		free((*tail)->next);
-		(*tail)->next = NULL;
-	}
-	else
-	{
-		/* If the tail is the last element,
-			just free it and NULL it.
-		*/
-		free(*tail);
-		*tail = NULL;
-	}
+  if ((*tail)->prev != NULL) {
+    /* If the tail is not the last element,
+    	new tail is element beneath it
+     	free the old tail
+    	set new tail's next to NULL
+    */
+    *tail = (*tail)->prev;
+    free((*tail)->next);
+    (*tail)->next = NULL;
+  } else {
+    /* If the tail is the last element,
+    	just free it and NULL it.
+    */
+    free(*tail);
+    *tail = NULL;
+  }
 
-	return 0;
+  return 0;
 }
 
