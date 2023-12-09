@@ -10,8 +10,8 @@
 #include "network.h"
 
 /* flags used to control the appearance of the image */
-int lineDrawing = 0;	// draw polygons as solid or lines
-int lighting = 1;	// use diffuse and specular lighting
+int lineDrawing = 0;  // draw polygons as solid or lines
+int lighting = 1;  // use diffuse and specular lighting
 int smoothShading = 1;  // smooth or flat shading
 int textures = 0;
 
@@ -27,20 +27,20 @@ float oldvpx, oldvpy, oldvpz;
 float mvx = 0.0, mvy = 45.0, mvz = 0.0;
 
 /* location for the light source (the sun), the first three
-   values are the x,y,z coordinates */
+     values are the x,y,z coordinates */
 GLfloat lightPosition[] = {0.0, 99.0, 0.0, 0.0};
 /* location for light source that is kept at viewpoint location */
 GLfloat viewpointLight[] = {-50.0, -50.0, -50.0, 1.0};
 
 /* command line flags */
-int flycontrol = 0;		// allow viewpoint to move in y axis when 1
-int displayAllCubes = 0;	// draw all of the cubes in the world when 1
-int testWorld = 0;		// sample world for timing tests
-int fps = 0;			// turn on frame per second output
+int flycontrol = 0;  // allow viewpoint to move in y axis when 1
+int displayAllCubes = 0;  // draw all of the cubes in the world when 1
+int testWorld = 0;  // sample world for timing tests
+int fps = 0;  // turn on frame per second output
 
 /* list of cubes to display */
 int displayList[MAX_DISPLAY_LIST][3];
-int displayCount = 0;		// count of cubes in displayList[][]
+int displayCount = 0; // count of cubes in displayList[][]
 
 /* list of mobs - number of mobs, xyz values and rotation about y */
 float mobPosition[MOB_COUNT][4];
@@ -66,7 +66,7 @@ int digflag[4];
 void initPlayerArray()
 {
   int i;
-  for (i=0; i<PLAYER_COUNT; i++)
+  for (i = 0; i < PLAYER_COUNT; i++)
   {
     playerPosition[i][0] = 0.0;
     playerPosition[i][1] = 0.0;
@@ -134,7 +134,7 @@ void showPlayer(int number)
 void initMobArray()
 {
   int i;
-  for (i=0; i<MOB_COUNT; i++)
+  for (i = 0; i < MOB_COUNT; i++)
   {
     mobPosition[i][0] = 0.0;
     mobPosition[i][1] = 0.0;
@@ -196,8 +196,6 @@ void showMob(int number)
   }
   mobVisible[number] = 1;
 }
-
-
 
 /* allows user to set position of the light */
 void setLightPosition(GLfloat x, GLfloat y, GLfloat z)
@@ -262,8 +260,6 @@ int addDisplayList(int x, int y, int z)
   return displayCount;
 }
 
-
-
 /*  Initialize material property and light source.  */
 void init (void)
 {
@@ -300,13 +296,11 @@ void init (void)
   glLightfv (GL_LIGHT1, GL_SPECULAR, light_specular);
   glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.5);
 
-
   glEnable (GL_LIGHTING);
   glEnable (GL_LIGHT0);
   glEnable (GL_LIGHT1);
 
   glEnable(GL_DEPTH_TEST);
-
 }
 
 /* draw cube in world[i][j][k] */
@@ -333,7 +327,6 @@ void drawCube(int i, int j, int k)
   GLfloat dyellow[]   = {0.5, 0.5, 0.0, 1.0};
   GLfloat dpurple[]   = {0.5, 0.0, 0.5, 1.0};
   GLfloat dorange[]   = {0.5, 0.32, 0.0, 1.0};
-
 
   /* select colour based on value in the world array */
   glMaterialfv(GL_FRONT, GL_SPECULAR, white);
@@ -404,14 +397,12 @@ void drawCube(int i, int j, int k)
   glPopMatrix ();
 }
 
-
-
 /* called each time the world is redrawn */
 void display (void)
 {
   GLfloat skyblue[]  = {0.52, 0.74, 0.84, 1.0};
   GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
-  GLfloat red[]   = {1.0, 0.0, 0.0, 1.0};
+  GLfloat red[] = {1.0, 0.0, 0.0, 1.0};
   GLfloat gray[] = {0.3, 0.3, 0.3, 1.0};
   GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
   int i, j, k;
@@ -419,8 +410,7 @@ void display (void)
   buildDisplayList();
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  /* position viewpoint based on mouse rotation and keyboard 
-     translation */
+  /* position viewpoint based on mouse rotation and keyboard translation */
   glLoadIdentity();
   glRotatef(mvx, 1.0, 0.0, 0.0);
   glRotatef(mvy, 0.0, 1.0, 0.0);
@@ -468,14 +458,17 @@ void display (void)
   glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, black);
 
   /* draw mobs in the world */
-  for(i=0; i<MOB_COUNT; i++)
+  for (i = 0; i < MOB_COUNT; i++)
   {
     if (mobVisible[i] == 1)
     {
       glPushMatrix();
       /* black body */
-      glTranslatef(mobPosition[i][0]+0.5, mobPosition[i][1]+0.5,
-	  mobPosition[i][2]+0.5);
+      glTranslatef(
+        mobPosition[i][0]+0.5,
+        mobPosition[i][1]+0.5,
+        mobPosition[i][2]+0.5
+      );
       glMaterialfv(GL_FRONT, GL_AMBIENT, black);
       glMaterialfv(GL_FRONT, GL_DIFFUSE, gray);
       glutSolidSphere(0.5, 8, 8);
@@ -489,16 +482,19 @@ void display (void)
       glPopMatrix();
     }
   }
-
+  
   /* draw players in the world */
-  for(i=0; i<PLAYER_COUNT; i++)
+  for (i = 0; i < PLAYER_COUNT; i++)
   {
     if (playerVisible[i] == 1)
     {
       glPushMatrix();
       /* black body */
-      glTranslatef(playerPosition[i][0]+0.5, playerPosition[i][1]+0.5,
-	  playerPosition[i][2]+0.5);
+      glTranslatef(
+        playerPosition[i][0]+0.5,
+        playerPosition[i][1]+0.5,
+        playerPosition[i][2]+0.5
+      );
       glMaterialfv(GL_FRONT, GL_AMBIENT, white);
       glMaterialfv(GL_FRONT, GL_DIFFUSE, gray);
       glutSolidSphere(0.5, 8, 8);
@@ -517,17 +513,17 @@ void display (void)
   if (displayAllCubes == 1)
   {
     /* draw all cubes */
-    for(i=0; i<WORLDX; i++)
+    for (i = 0; i < WORLDX; i++)
     {
-      for(j=0; j<WORLDY; j++)
+      for (j = 0; j < WORLDY; j++)
       {
-	for(k=0; k<WORLDZ; k++)
-	{
-	  if (world[i][j][k] != 0)
-	  {
-	    drawCube(i, j, k);
-	  }
-	}
+        for (k = 0; k < WORLDZ; k++)
+        {
+          if (world[i][j][k] != 0)
+          {
+            drawCube(i, j, k);
+          }
+        }
       }
     }
   }
@@ -536,11 +532,13 @@ void display (void)
     /* draw only the cubes in the displayList */
     /* these should have been selected in the update function */
 
-    for(i=0; i<displayCount; i++)
+    for (i = 0; i < displayCount; i++)
     {
-      drawCube(displayList[i][0],
-	  displayList[i][1],
-	  displayList[i][2]);
+      drawCube(
+        displayList[i][0],
+        displayList[i][1],
+        displayList[i][2]
+      );
     }
   }
 
@@ -571,7 +569,7 @@ void keyboard(unsigned char key, int x, int y)
     case 'q':
       exit(0);
       break;
-    case '1':		// draw polygons as outlines
+    case '1':  // draw polygons as outlines
       lineDrawing = 1;
       lighting = 0;
       smoothShading = 0;
@@ -579,7 +577,7 @@ void keyboard(unsigned char key, int x, int y)
       init();
       glutPostRedisplay();
       break;
-    case '2':		// draw polygons as filled
+    case '2':  // draw polygons as filled
       lineDrawing = 0;
       lighting = 0;
       smoothShading = 0;
@@ -587,7 +585,7 @@ void keyboard(unsigned char key, int x, int y)
       init();
       glutPostRedisplay();
       break;
-    case '3':		// diffuse and specular lighting, flat shading
+    case '3':  // diffuse and specular lighting, flat shading
       lineDrawing = 0;
       lighting = 1;
       smoothShading = 0;
@@ -595,7 +593,7 @@ void keyboard(unsigned char key, int x, int y)
       init();
       glutPostRedisplay();
       break;
-    case '4':		// diffuse and specular lighting, smooth shading
+    case '4':  // diffuse and specular lighting, smooth shading
       lineDrawing = 0;
       lighting = 1;
       smoothShading = 1;
@@ -603,7 +601,7 @@ void keyboard(unsigned char key, int x, int y)
       init();
       glutPostRedisplay();
       break;
-    case '5':		// texture with  smooth shading
+    case '5':  // texture with  smooth shading
       lineDrawing = 0;
       lighting = 1;
       smoothShading = 1;
@@ -611,7 +609,7 @@ void keyboard(unsigned char key, int x, int y)
       init();
       glutPostRedisplay();
       break;
-    case 'w':		// forward motion
+    case 'w':  // forward motion
       player_flag[0] = 1;
       oldvpx = vpx;
       oldvpy = vpy;
@@ -621,12 +619,12 @@ void keyboard(unsigned char key, int x, int y)
       vpx -= sin(roty) * 0.3;
       // turn off y motion so you can't fly
       if (flycontrol == 1)
-	vpy += sin(rotx) * 0.3;
+        vpy += sin(rotx) * 0.3;
       vpz += cos(roty) * 0.3;
       collisionResponse();
       glutPostRedisplay();
       break;
-    case 's':		// backward motion
+    case 's':  // backward motion
       player_flag[0] = 1;
       oldvpx = vpx;
       oldvpy = vpy;
@@ -636,12 +634,12 @@ void keyboard(unsigned char key, int x, int y)
       vpx += sin(roty) * 0.3;
       // turn off y motion so you can't fly
       if (flycontrol == 1)
-	vpy -= sin(rotx) * 0.3;
+        vpy -= sin(rotx) * 0.3;
       vpz -= cos(roty) * 0.3;
       collisionResponse();
       glutPostRedisplay();
       break;
-    case 'a':		// strafe left motion
+    case 'a':  // strafe left motion
       player_flag[0] = 1;
       oldvpx = vpx;
       oldvpy = vpy;
@@ -652,7 +650,7 @@ void keyboard(unsigned char key, int x, int y)
       collisionResponse();
       glutPostRedisplay();
       break;
-    case 'd':		// strafe right motion
+    case 'd':  // strafe right motion
       player_flag[0] = 1;
       oldvpx = vpx;
       oldvpy = vpy;
@@ -663,11 +661,11 @@ void keyboard(unsigned char key, int x, int y)
       collisionResponse();
       glutPostRedisplay();
       break;
-    case 'f':		// toggle flying controls
+    case 'f':  // toggle flying controls
       if (flycontrol == 0) flycontrol = 1;
       else flycontrol = 0;
       break;
-    case ' ':		// toggle digging controls
+    case ' ':  // toggle digging controls
       dig = 1;
       break;
   }
@@ -678,8 +676,8 @@ void keyboard(unsigned char key, int x, int y)
 void loadTexture()
 {
   FILE *fp;
-  int  i, j;
-  int  red, green, blue;
+  int i, j;
+  int red, green, blue;
 
   if ((fp = fopen("image.txt", "r")) == 0)
   {
@@ -687,9 +685,9 @@ void loadTexture()
     exit(0);
   } 
 
-  for(i=0; i<64; i++)
+  for (i = 0; i < 64; i++)
   {
-    for(j=0; j<64; j++)
+    for (j = 0; j < 64; j++)
     {
       fscanf(fp, "%d %d %d", &red, &green, &blue);
       Image[i][j][0] = red;
@@ -707,7 +705,7 @@ void loadTexture()
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA,
-      GL_UNSIGNED_BYTE, Image);
+    GL_UNSIGNED_BYTE, Image);
   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
   glEnable(GL_TEXTURE_GEN_S);
   glEnable(GL_TEXTURE_GEN_T);
@@ -723,27 +721,26 @@ void motion(int x, int y)
   oldx = x;
   oldy = y;
   glutPostRedisplay();
-
 }
 
 void mouse(int button, int state, int x, int y)
 {
   /* capture mouse button events - not currently used */
   /*
-     if (button == GLUT_LEFT_BUTTON)
-     printf("left button - ");
-     else if (button == GLUT_MIDDLE_BUTTON)
-     printf("middle button - ");
-     else
-     printf("right button - ");
+    if (button == GLUT_LEFT_BUTTON)
+      printf("left button - ");
+    else if (button == GLUT_MIDDLE_BUTTON)
+      printf("middle button - ");
+    else
+      printf("right button - ");
 
-     if (state == GLUT_UP)
-     printf("up - ");
-     else
-     printf("down - ");
+    if (state == GLUT_UP)
+      printf("up - ");
+    else
+      printf("down - ");
 
-     printf("%d %d\n", x, y);
-   */
+    printf("%d %d\n", x, y);
+  */
 }
 
 
@@ -757,7 +754,7 @@ void graphicsInit(int *argc, char **argv)
 
   /* parse command line args */
   fullscreen = 0;
-  for(i=1; i<*argc; i++)
+  for (i = 1; i < *argc; i++)
   {
     if (strcmp(argv[i],"-full") == 0)
       fullscreen = 1;
@@ -813,7 +810,6 @@ void graphicsInit(int *argc, char **argv)
   glutPassiveMotionFunc(motion);
   glutMouseFunc(mouse);
   glutIdleFunc(update);
-
 
   /* initialize mob array to empty */
   initPlayerArray();
