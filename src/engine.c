@@ -694,6 +694,14 @@ void loadTexture()
 void motion(int x, int y)
 {
   static float oldx, oldy;
+  static int motion_initialized = 0;
+
+  if (!motion_initialized) {
+    oldy = y;
+    oldx = x;
+    motion_initialized = 1;
+  }
+
   mvx += (float) y - oldy;
   mvy += (float) x - oldx;
   oldx = x;
