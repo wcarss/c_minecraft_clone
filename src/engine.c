@@ -263,8 +263,8 @@ int addDisplayList(int x, int y, int z)
 void init(void)
 {
   GLfloat light_ambient[] = { 0.0, 0.0, 0.0, 1.0 };
-  GLfloat light_diffuse[] = { 0.8, 0.8, 0.8, 1.0 };
-  GLfloat light_specular[] = { 0.5, 0.5, 0.5, 1.0 };
+  GLfloat light_diffuse[] = { 0.6, 0.6, 0.6, 1.0 };
+  GLfloat light_specular[] = { 0.3, 0.3, 0.3, 1.0 };
   GLfloat light_full_off[] = {0.0, 0.0, 0.0, 1.0};
   GLfloat light_full_on[] = {1.0, 1.0, 1.0, 1.0};
 

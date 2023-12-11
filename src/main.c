@@ -52,13 +52,12 @@ void update()
 {
   float vx, vy, vz, mx, my, mz, rx, ry, rz;
   // sample_mob_code(); // came with the file; can be replaced
-  static long int last = 0;
   static int save = 0;
-  static int deg;
+  static double deg;
   static int x = 0;
   static int y = 0;
+  float fx = 0, fy = 0;
   int z = 50;
-  int now;
   //char buf[MESSAGE_LENGTH];
 
   if (netClient && netServer) {
@@ -75,41 +74,33 @@ void update()
     get_stuff_from_client();
   }
 
-  /* check your watch */
-  now = time(NULL);
+  /* restore a previously saved position */
+  world[x][y][z] = save;
 
-  if ((now - last) >= 1) {
-    /* restore a previously saved position */
-    world[x][y][z] = save;
+  /* calculate position of the light */
+  fx = (WORLDX / 2.0) - 1 + (WORLDX / 2.0) * cos(deg * PI / 180.0);
+  fy = (WORLDY / 2.0) - 1 + (WORLDY / 2.0) * sin(deg * PI / 180.0);
+  x = round(fx);
+  y = round(fy);
 
-    /* calculate position of the light */
-    x = (WORLDX / 2.0) - 1 + (WORLDX / 2.0) * cos(deg * PI / 180.0);
-    y = (WORLDY / 2.0) - 1 + (WORLDY / 2.0) * sin(deg * PI / 180.0);
+  /* save the state of the cube the light will fill */
+  save = world[x][y][z];
 
-    /* save the state of the cube the light will fill */
-    save = world[x][y][z];
+  /* place the light and the white cube */
+  world[x][y][z] = WHITE;
+  setLightPosition(x, y - 1, z);
+  sun_flag = 1;
+  deg += 0.1;
 
-    /* place the light and the white cube */
-    world[x][y][z] = WHITE;
-    /*printf("x, y: %d, %d\n", x, y);*/
-    setLightPosition(x, y - 1, z);
-    sun_flag = 1;
-    /* using this as a timestep for the light and clouds */
-    deg++;
+  /* using this as a timestep for the light and clouds */
+  if (deg > 180) { deg = 0; }
 
-    if (deg > 180) { deg = 0; }
-
-    /* Every few timesteps, update the clouds */
-    if ((int)deg % 3 == 0) {
-      perlin_clouds(90, 8, deg);
-      clouds_flag = 1;
-      mob_action();
-    }
-
-    /* save the time for FPS control */
-    last = now;
+  /* Every few timesteps, update the clouds */
+  if ((int)(deg * 100) % 3 == 0) {
+    perlin_clouds(90, 8, deg);
+    clouds_flag = 1;
+    mob_action();
   }
-
 
   /* sample use of the dig flag, it is set equal to 1 when the user */
   /*  presses the space bar, you need to reset it to 0 */
@@ -134,9 +125,9 @@ void update()
     rz = vz + (-1 * cos(my)) * cos(mx); //vz+cos(my)*cos(mx) * 1;
     ry = vy - sin(mx); //(vy+sin(mx) * 1);
     printf("got: rx, ry, rz: %f, %f, %f\t", rx, ry, rz);
-    world[(int)round(rx)][(int)round(ry)][(int)round(rz)] = EMPTY;
+    world[(int)round(rx)][(int)round(ry)][(int)round(rz)] = ORANGE;
     trimout();
-    // buildDisplayList();
+    //buildDisplayList();
     digflag[1] = -1 * (int)round(rx);
     digflag[2] = -1 * (int)round(ry);
     digflag[3] = -1 * (int)round(rz);
@@ -160,7 +151,7 @@ void update()
     }
   }
 
-  /* your code goes here */
+  glutPostRedisplay();
 }
 
 
@@ -168,11 +159,14 @@ int main(int argc, char* argv[])
 {
   /* Initialize the graphics system */
   graphicsInit(&argc, argv);
+  printf("gl version: %s\n", glGetString(GL_VERSION));
 
   if (!netClient) {
     if (testWorld == 1) {
+      printf("building test world\n");
       build_test_world();
     } else {
+      printf("building main world\n");
       build_world();
       place_mobs();
     }
