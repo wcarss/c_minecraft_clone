@@ -63,6 +63,8 @@ void buildDisplayList()
   static int frame = 0, time, timebase = 0;
   int i, j, k;
 
+  trimout();
+  ExtractFrustum();
   displayCount = 0;
 
   for (i = 0; i < WORLDX; i++) {
