@@ -786,7 +786,7 @@ void graphicsInit(int *argc, char **argv)
     glutGameModeString("1024x768:32@75");
     glutEnterGameMode();
   } else {
-    glutInitWindowSize(1024, 768);
+    glutInitWindowSize(1920, 1280);
     glutCreateWindow(argv[0]);
   }
 
