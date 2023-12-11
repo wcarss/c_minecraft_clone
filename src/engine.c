@@ -524,6 +524,7 @@ void reshape(int w, int h)
 /* respond to keyboard events */
 void keyboard(unsigned char key, int x, int y)
 {
+  const double PLAYER_SPEED = 0.8;
   float rotx, roty;
   //static int lighton = 1;
 
@@ -585,14 +586,14 @@ void keyboard(unsigned char key, int x, int y)
     oldvpz = vpz;
     rotx = (mvx / 180.0 * 3.141592);
     roty = (mvy / 180.0 * 3.141592);
-    vpx -= sin(roty) * 0.3;
+    vpx -= sin(roty) * PLAYER_SPEED;
 
     // turn off y motion so you can't fly
     if (flycontrol == 1) {
-      vpy += sin(rotx) * 0.3;
+      vpy += sin(rotx) * PLAYER_SPEED;
     }
 
-    vpz += cos(roty) * 0.3;
+    vpz += cos(roty) * PLAYER_SPEED;
     collisionResponse();
     glutPostRedisplay();
     break;
@@ -604,14 +605,14 @@ void keyboard(unsigned char key, int x, int y)
     oldvpz = vpz;
     rotx = (mvx / 180.0 * 3.141592);
     roty = (mvy / 180.0 * 3.141592);
-    vpx += sin(roty) * 0.3;
+    vpx += sin(roty) * PLAYER_SPEED;
 
     // turn off y motion so you can't fly
     if (flycontrol == 1) {
-      vpy -= sin(rotx) * 0.3;
+      vpy -= sin(rotx) * PLAYER_SPEED;
     }
 
-    vpz -= cos(roty) * 0.3;
+    vpz -= cos(roty) * PLAYER_SPEED;
     collisionResponse();
     glutPostRedisplay();
     break;
@@ -622,8 +623,8 @@ void keyboard(unsigned char key, int x, int y)
     oldvpy = vpy;
     oldvpz = vpz;
     roty = (mvy / 180.0 * 3.141592);
-    vpx += cos(roty) * 0.3;
-    vpz += sin(roty) * 0.3;
+    vpx += cos(roty) * PLAYER_SPEED;
+    vpz += sin(roty) * PLAYER_SPEED;
     collisionResponse();
     glutPostRedisplay();
     break;
@@ -634,8 +635,8 @@ void keyboard(unsigned char key, int x, int y)
     oldvpy = vpy;
     oldvpz = vpz;
     roty = (mvy / 180.0 * 3.141592);
-    vpx -= cos(roty) * 0.3;
-    vpz -= sin(roty) * 0.3;
+    vpx -= cos(roty) * PLAYER_SPEED;
+    vpz -= sin(roty) * PLAYER_SPEED;
     collisionResponse();
     glutPostRedisplay();
     break;
