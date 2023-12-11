@@ -262,9 +262,9 @@ int addDisplayList(int x, int y, int z)
 /*  Initialize material property and light source.  */
 void init(void)
 {
-  GLfloat light_ambient[] = { 0.0, 0.0, 0.0, 1.0 };
-  GLfloat light_diffuse[] = { 0.6, 0.6, 0.6, 1.0 };
-  GLfloat light_specular[] = { 0.3, 0.3, 0.3, 1.0 };
+  GLfloat light_ambient[] = { 0.1, 0.1, 0.1, 0.3 };
+  GLfloat light_diffuse[] = { 0.3, 0.3, 0.3, 0.7 };
+  GLfloat light_specular[] = { 0.2, 0.2, 0.2, 0.8 };
   GLfloat light_full_off[] = {0.0, 0.0, 0.0, 1.0};
   GLfloat light_full_on[] = {1.0, 1.0, 1.0, 1.0};
 
@@ -377,7 +377,7 @@ void display(void)
   GLfloat skyblue[]  = {0.52, 0.74, 0.84, 1.0};
   GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
   GLfloat red[] = {1.0, 0.0, 0.0, 1.0};
-  GLfloat gray[] = {0.3, 0.3, 0.3, 1.0};
+  GLfloat gray[] = {0.15, 0.15, 0.15, 0.8};
   GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
   int i, j, k;
 
@@ -431,7 +431,7 @@ void display(void)
   glPopMatrix();
   glShadeModel(GL_SMOOTH);
   /* turn off emision lighting, use only for sky */
-  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, black);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, gray);
 
   /* draw mobs in the world */
   for (i = 0; i < MOB_COUNT; i++) {
@@ -461,7 +461,7 @@ void display(void)
   for (i = 0; i < PLAYER_COUNT; i++) {
     if (playerVisible[i] == 1) {
       glPushMatrix();
-      /* black body */
+      /* white body */
       glTranslatef(
         playerPosition[i][0] + 0.5,
         playerPosition[i][1] + 0.5,
@@ -470,7 +470,7 @@ void display(void)
       glMaterialfv(GL_FRONT, GL_AMBIENT, white);
       glMaterialfv(GL_FRONT, GL_DIFFUSE, gray);
       glutSolidSphere(0.5, 8, 8);
-      /* white eyes */
+      /* red eyes */
       glRotatef(playerPosition[i][3], 0.0, 1.0, 0.0);
       glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);
       glTranslatef(0.3, 0.1, 0.3);
