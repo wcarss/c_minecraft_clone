@@ -8,8 +8,6 @@
 #else
 // as of 2023-12, required to silence 'OpenGL API deprecated. (Define GL_SILENCE_DEPRECATION to silence these warnings) [-Wdeprecated-declarations]'
 #define GL_SILENCE_DEPRECATION 1
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
 #include <GLUT/glut.h>
 #endif
 
