@@ -51,6 +51,7 @@ void collisionResponse()
 void update()
 {
   float vx, vy, vz, mx, my, mz, rx, ry, rz;
+  int flattened_rx, flattened_ry, flattened_rz;
   // sample_mob_code(); // came with the file; can be replaced
   static int save = 0;
   static double deg;
@@ -104,34 +105,62 @@ void update()
 
   /* sample use of the dig flag, it is set equal to 1 when the user */
   /*  presses the space bar, you need to reset it to 0 */
+  getViewOrientation(&mx, &my, &mz);
+  getViewPosition(&vx, &vy, &vz);
+
+  vx *= -1;
+  vy *= -1;
+  vz *= -1;
+
+  while (mx >= 360) { mx -= 360; }
+
+  // my can be outside of 360 negatively or positively
+  while (my >= 360) { my -= 360; }
+
+  while (my <= -360) { my += 360; }
+
+  while (mz >= 360) { mz -= 360; }
+
+  float rad_y = my / 180 * PI;
+  float rad_x = mx / 180 * PI;
+  const float r = 0.1; // distance to walk along the line
+  // basis-vector components:
+  float x_component = sin(rad_y) * cos(rad_x); // sin-y, tempered by up+down angle
+  float y_component = -1 * sin(rad_x); // negatively impacted by up+down, 0 at 0 and 1.0 at -90
+  float z_component = - cos(rad_y) * cos(rad_x); // -cos-y, tempered by up+down angle
+  //printf("x,y,z components: %f, %f, %f:\n", x_component, y_component, z_component);
+  // initialize the walk state
+  rx = vx + r * x_component;
+  ry = vy + 0.5 + r * y_component;
+  rz = vz + r * z_component;
+
+  int i;
+
+  // walk along the line, checking for intersections:
+  for (i = 0; i < 100; i++) {
+    rx = rx + r * x_component;
+    ry = ry + r * y_component;
+    rz = rz + r * z_component;
+    flattened_rx = (int)floor(rx);
+    flattened_ry = (int)floor(ry);
+    flattened_rz = (int)floor(rz);
+
+    if (world[flattened_rx][flattened_ry][flattened_rz]) {
+      highlight[0] = flattened_rx;
+      highlight[1] = flattened_ry;
+      highlight[2] = flattened_rz;
+      break;
+    }
+  }
+
   if (dig == 1) {
     digflag[0] = 1;
-    getViewOrientation(&mx, &my, &mz);
-    getViewPosition(&vx, &vy, &vz);
-
-    vx *= -1;
-    vy *= -1;
-    vz *= -1;
-
-    while (mx >= 360) { mx -= 360; }
-
-    while (my >= 360) { my -= 360; }
-
-    while (mz >= 360) { mz -= 360; }
-
-    printf("dig: mx, my, mz: %f, %f, %f\t", mx, my, mz);
-    printf("pos: vx, vy, vz: %f, %f, %f\t", vx, vy, vz);
-    rx = vx + sin(my) * cos(mx); //vx+sin(my)*cos(mx) * 1;
-    rz = vz + (-1 * cos(my)) * cos(mx); //vz+cos(my)*cos(mx) * 1;
-    ry = vy - sin(mx); //(vy+sin(mx) * 1);
-    printf("got: rx, ry, rz: %f, %f, %f\t", rx, ry, rz);
-    world[(int)round(rx)][(int)round(ry)][(int)round(rz)] = ORANGE;
+    world[highlight[0]][highlight[1]][highlight[2]] = EMPTY;
     trimout();
-    //buildDisplayList();
-    digflag[1] = -1 * (int)round(rx);
-    digflag[2] = -1 * (int)round(ry);
-    digflag[3] = -1 * (int)round(rz);
-    printf("dug: rx, ry, rz: %d, %d, %d\n", -1 * (int)round(rx), -1 * (int)round(ry), -1 * (int)round(rz));
+    digflag[1] = -1 * flattened_rx;
+    digflag[2] = -1 * flattened_ry;
+    digflag[3] = -1 * flattened_rz;
+    printf("dug: rx, ry, rz: %d, %d, %d\n", -1 * flattened_rx, -1 * flattened_ry, -1 * flattened_rz);
 
     dig = 0;
   }
@@ -151,6 +180,7 @@ void update()
     }
   }
 
+  buildDisplayList();
   glutPostRedisplay();
 }
 

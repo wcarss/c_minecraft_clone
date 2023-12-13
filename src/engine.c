@@ -19,6 +19,8 @@ int textures = 0;
 GLubyte  Image[64][64][4];
 GLuint   textureID[1];
 
+float windowWidth, windowHeight;
+
 /* viewpoint coordinates */
 float vpx = -50.0, vpy = -80.0, vpz = -50.0;
 float oldvpx, oldvpy, oldvpz;
@@ -31,6 +33,9 @@ float mvx = 0.0, mvy = 45.0, mvz = 0.0;
 GLfloat lightPosition[] = {0.0, 99.0, 0.0, 0.0};
 /* location for light source that is kept at viewpoint location */
 GLfloat viewpointLight[] = { -50.0, -50.0, -50.0, 1.0};
+
+// highlight storage for mouselook showing what cube to interact with
+int highlight[3];
 
 /* command line flags */
 int flycontrol = 0;  // allow viewpoint to move in y axis when 1
@@ -368,6 +373,15 @@ void drawCube(int i, int j, int k)
   /* cube falls in the centre of the world array */
   glTranslatef(i + 0.5, j + 0.5, k + 0.5);
   glutSolidCube(1.0);
+
+  if (highlight[0] == i && highlight[1] == j && highlight[2] == k) {
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, coal);
+    glLineWidth(2.0);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glutSolidCube(1.01);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  }
+
   glPopMatrix();
 }
 
@@ -381,11 +395,18 @@ void display(void)
   GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
   int i, j, k;
 
-  buildDisplayList();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   /* position viewpoint based on mouse rotation and keyboard translation */
+  glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
+  gluPerspective(45.0, (GLfloat)windowWidth / (GLfloat)windowHeight, 0.1, 300.0);
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  glEnable(GL_DEPTH_TEST);
+
   glRotatef(mvx, 1.0, 0.0, 0.0);
   glRotatef(mvy, 0.0, 1.0, 0.0);
   /* Subtract 0.5 to raise viewpoint slightly above objects. */
@@ -417,6 +438,7 @@ void display(void)
 
   /* set starting location of objects */
   glPushMatrix();
+  buildDisplayList();
 
   /* make a blue sky cube */
   glShadeModel(GL_SMOOTH);
@@ -507,12 +529,42 @@ void display(void)
   }
 
   glPopMatrix();
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(0, windowWidth, windowHeight, 0, -1, 1);
+
+  // // Set up the modelview matrix
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  glDisable(GL_DEPTH_TEST);
+
+  // Set color to white
+  glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
+
+  // Draw a rectangle for the crosshair
+  glBegin(GL_QUADS);
+  glVertex2i(glutGet(GLUT_WINDOW_WIDTH) / 2 - 10, glutGet(GLUT_WINDOW_HEIGHT) / 2 - 2);
+  glVertex2i(glutGet(GLUT_WINDOW_WIDTH) / 2 + 10, glutGet(GLUT_WINDOW_HEIGHT) / 2 - 2);
+  glVertex2i(glutGet(GLUT_WINDOW_WIDTH) / 2 + 10, glutGet(GLUT_WINDOW_HEIGHT) / 2 + 2);
+  glVertex2i(glutGet(GLUT_WINDOW_WIDTH) / 2 - 10, glutGet(GLUT_WINDOW_HEIGHT) / 2 + 2);
+
+  glVertex2i(glutGet(GLUT_WINDOW_WIDTH) / 2 - 2, glutGet(GLUT_WINDOW_HEIGHT) / 2 - 10);
+  glVertex2i(glutGet(GLUT_WINDOW_WIDTH) / 2 + 2, glutGet(GLUT_WINDOW_HEIGHT) / 2 - 10);
+  glVertex2i(glutGet(GLUT_WINDOW_WIDTH) / 2 + 2, glutGet(GLUT_WINDOW_HEIGHT) / 2 + 10);
+  glVertex2i(glutGet(GLUT_WINDOW_WIDTH) / 2 - 2, glutGet(GLUT_WINDOW_HEIGHT) / 2 + 10);
+  glEnd();
+
+  glEnable(GL_DEPTH_TEST);
   glutSwapBuffers();
 }
 
 /* sets viewport information */
 void reshape(int w, int h)
 {
+  windowWidth = w;
+  windowHeight = h;
   glViewport(0, 0, (GLsizei) w, (GLsizei) h);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
