@@ -41,7 +41,7 @@ int highlight[3];
 int flycontrol = 0;  // allow viewpoint to move in y axis when 1
 int displayAllCubes = 0;  // draw all of the cubes in the world when 1
 int testWorld = 0;  // sample world for timing tests
-int fps = 0;  // turn on frame per second output
+int showFPS = 0;  // turn on frame per second output
 
 /* list of cubes to display */
 int displayList[MAX_DISPLAY_LIST][3];
@@ -807,8 +807,8 @@ void graphicsInit(int *argc, char **argv)
       testWorld = 1;
     }
 
-    if (strcmp(argv[i], "-fps") == 0) {
-      fps = 1;
+    if (strcmp(argv[i], "-showFPS") == 0 || strcmp(argv[i], "-showfps") == 0 || strcmp(argv[i], "-show-fps") == 0) {
+      showFPS = 1;
     }
 
     if (strcmp(argv[i], "-client") == 0) {
@@ -830,7 +830,7 @@ void graphicsInit(int *argc, char **argv)
     }
 
     if (strcmp(argv[i], "-help") == 0) {
-      printf("Usage: a4 [-full] [-drawall] [-testworld] [-fps] [-client] [-server]\n");
+      printf("Usage: a4 [-full] [-drawall] [-testworld] [-showFPS] [-client] [-server]\n");
       exit(0);
     }
   }

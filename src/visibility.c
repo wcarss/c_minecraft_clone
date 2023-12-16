@@ -80,7 +80,7 @@ void buildDisplayList()
   /* frame per second calculation */
   /* don't change the following routine */
   /* http://www.lighthouse3d.com/opengl/glut/index.php?fps */
-  if (fps == 1) {
+  if (showFPS == 1) {
     frame++;
     time = glutGet(GLUT_ELAPSED_TIME);
 

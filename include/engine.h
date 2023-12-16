@@ -79,7 +79,7 @@ extern int clouds_flag;
 extern int sun_flag;
 extern int player_flag[PLAYER_COUNT];
 extern int highlight[3];
-int fps;
+extern int showFPS;
 /* flag to indicate removal of cube the viewer is facing */
 extern int displayAllCubes;
 extern int dig;
