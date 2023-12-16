@@ -39,7 +39,8 @@ GLubyte  visible[WORLDX][WORLDY][WORLDZ];
 #define PLAYER_COUNT 10
 #define MAX_DISPLAY_LIST 500000
 
-void graphicsInit(int *, char **);
+void parseArgs(int, char **);
+void initializeOpenGL();
 void setLightPosition(GLfloat, GLfloat, GLfloat);
 GLfloat* getLightPosition();
 
@@ -56,6 +57,7 @@ void setPlayerPosition(int number, float x, float y, float z, float playerroty);
 void hidePlayer(int number);
 void showPlayer(int number);
 
+void initMobArray();
 void createMob(int, float, float, float, float);
 void setMobPosition(int, float, float, float, float);
 void hideMob(int);
@@ -80,6 +82,7 @@ extern int sun_flag;
 extern int player_flag[PLAYER_COUNT];
 extern int highlight[3];
 extern int showFPS;
+extern int fullscreen;
 /* flag to indicate removal of cube the viewer is facing */
 extern int displayAllCubes;
 extern int dig;

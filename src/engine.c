@@ -42,6 +42,7 @@ int flycontrol = 0;  // allow viewpoint to move in y axis when 1
 int displayAllCubes = 0;  // draw all of the cubes in the world when 1
 int testWorld = 0;  // sample world for timing tests
 int showFPS = 0;  // turn on frame per second output
+int fullscreen = 0; // render a fullscreen window or not
 
 /* list of cubes to display */
 int displayList[MAX_DISPLAY_LIST][3];
@@ -784,63 +785,16 @@ void mouse(int button, int state, int x, int y)
 
 
 /* initialize graphics information and mob data structure */
-void graphicsInit(int *argc, char **argv)
+void initializeOpenGL(char *windowTitle)
 {
-  int i, fullscreen;
-  /* set GL window information */
-  glutInit(argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
-
-  /* parse command line args */
-  fullscreen = 0;
-
-  for (i = 1; i < *argc; i++) {
-    if (strcmp(argv[i], "-full") == 0) {
-      fullscreen = 1;
-    }
-
-    if (strcmp(argv[i], "-drawall") == 0) {
-      displayAllCubes = 1;
-    }
-
-    if (strcmp(argv[i], "-testworld") == 0) {
-      testWorld = 1;
-    }
-
-    if (strcmp(argv[i], "-showFPS") == 0 || strcmp(argv[i], "-showfps") == 0 || strcmp(argv[i], "-show-fps") == 0) {
-      showFPS = 1;
-    }
-
-    if (strcmp(argv[i], "-client") == 0) {
-      netClient = 1;
-      server_socket = client_setup();
-
-      while (1) {
-        printf("trying...\n");
-
-        if (get_visible_world(server_socket) == 0) { break; }
-      }
-
-      printf("ha! out.\n");
-    }
-
-    if (strcmp(argv[i], "-server") == 0) {
-      netServer = 1;
-      server_socket = server_setup();
-    }
-
-    if (strcmp(argv[i], "-help") == 0) {
-      printf("Usage: a4 [-full] [-drawall] [-testworld] [-showFPS] [-client] [-server]\n");
-      exit(0);
-    }
-  }
 
   if (fullscreen == 1) {
     glutGameModeString("1024x768:32@75");
     glutEnterGameMode();
   } else {
     glutInitWindowSize(1920, 1280);
-    glutCreateWindow(argv[0]);
+    glutCreateWindow(windowTitle);
   }
 
   init();
@@ -856,9 +810,10 @@ void graphicsInit(int *argc, char **argv)
   glutMouseFunc(mouse);
   glutIdleFunc(update);
 
-  /* initialize mob array to empty */
-  initPlayerArray();
-  initMobArray();
+  printf("gl version: %s\n", glGetString(GL_VERSION));
+
+  /* starts the graphics processing loop */
+  glutMainLoop();
 }
 
 

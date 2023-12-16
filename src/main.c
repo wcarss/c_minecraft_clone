@@ -184,12 +184,55 @@ void update()
   glutPostRedisplay();
 }
 
+void parseArgs(int argc, char *argv[])
+{
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "-full") == 0) {
+      fullscreen = 1;
+    }
+
+    if (strcmp(argv[i], "-drawall") == 0) {
+      displayAllCubes = 1;
+    }
+
+    if (strcmp(argv[i], "-testworld") == 0) {
+      testWorld = 1;
+    }
+
+    if (strcmp(argv[i], "-showFPS") == 0 || strcmp(argv[i], "-showfps") == 0 || strcmp(argv[i], "-show-fps") == 0) {
+      showFPS = 1;
+    }
+
+    if (strcmp(argv[i], "-client") == 0) {
+      netClient = 1;
+      server_socket = client_setup();
+
+      while (1) {
+        printf("trying...\n");
+
+        if (get_visible_world(server_socket) == 0) { break; }
+      }
+
+      printf("ha! out.\n");
+    }
+
+    if (strcmp(argv[i], "-server") == 0) {
+      netServer = 1;
+      server_socket = server_setup();
+    }
+
+    if (strcmp(argv[i], "-help") == 0) {
+      printf("Usage: a4 [-full] [-drawall] [-testworld] [-showFPS] [-client] [-server]\n");
+      exit(0);
+    }
+  }
+}
+
 
 int main(int argc, char* argv[])
 {
-  /* Initialize the graphics system */
-  graphicsInit(&argc, argv);
-  printf("gl version: %s\n", glGetString(GL_VERSION));
+  glutInit(&argc, argv);
+  parseArgs(argc, argv);
 
   if (!netClient) {
     if (testWorld == 1) {
@@ -202,9 +245,11 @@ int main(int argc, char* argv[])
     }
   }
 
+  initPlayerArray();
+  initMobArray();
   trimout();
-  /* starts the graphics processing loop */
-  glutMainLoop();
+
+  initializeOpenGL(argv[0]);
 
   return 0;
 }
