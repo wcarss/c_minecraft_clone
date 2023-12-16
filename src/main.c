@@ -205,20 +205,10 @@ void parseArgs(int argc, char *argv[])
 
     if (strcmp(argv[i], "-client") == 0) {
       netClient = 1;
-      server_socket = client_setup();
-
-      while (1) {
-        printf("trying...\n");
-
-        if (get_visible_world(server_socket) == 0) { break; }
-      }
-
-      printf("ha! out.\n");
     }
 
     if (strcmp(argv[i], "-server") == 0) {
       netServer = 1;
-      server_socket = server_setup();
     }
 
     if (strcmp(argv[i], "-help") == 0) {
@@ -233,6 +223,18 @@ int main(int argc, char* argv[])
 {
   glutInit(&argc, argv);
   parseArgs(argc, argv);
+
+  if (netClient) {
+    server_socket = client_setup();
+
+    while (1) {
+      printf("trying...\n");
+
+      if (get_visible_world(server_socket) == 0) { break; }
+    }
+  } else if (netServer) {
+    server_socket = server_setup();
+  }
 
   if (!netClient) {
     if (testWorld == 1) {
