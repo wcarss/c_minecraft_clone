@@ -119,7 +119,7 @@ int get_stuff_from_server()
   strcpy(result, "not done");
 
   while (strcmp(result, "done") != 0) {
-    tv.tv_usec = 50000;
+    tv.tv_usec = 200;
     tv.tv_sec = 0;
     readers = master;
     select(maxfd + 1, &readers, NULL, NULL, &tv);
@@ -308,7 +308,7 @@ int get_stuff_from_client()
   strcpy(result, "not done");
 
   while (strcmp(result, "done") != 0) {
-    tv.tv_usec = 50000;
+    tv.tv_usec = 200;
     tv.tv_sec = 0;
     readers = master;
 
