@@ -262,8 +262,9 @@ int main(int argc, char* argv[])
 
 
   trimout();
-
-  initializeOpenGL(argv[0]);
+  char title[64];
+  sprintf(title, "%s %s %d", argv[0], netClient ? "client" : netServer ? "server" : "standalone", identity);
+  initializeOpenGL(title);
 
   return 0;
 }
