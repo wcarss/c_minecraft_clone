@@ -128,7 +128,7 @@ void update()
 
   float rad_y = my / 180 * PI;
   float rad_x = mx / 180 * PI;
-  const float r = 0.1; // distance to walk along the line
+  const float r = 0.2; // distance to walk along the line
   // basis-vector components:
   float x_component = sin(rad_y) * cos(rad_x); // sin-y, tempered by up+down angle
   float y_component = -1 * sin(rad_x); // negatively impacted by up+down, 0 at 0 and 1.0 at -90
@@ -142,7 +142,7 @@ void update()
   int i;
 
   // walk along the line, checking for intersections:
-  for (i = 0; i < 100; i++) {
+  for (i = 0; i < 50; i++) {
     rx = rx + r * x_component;
     ry = ry + r * y_component;
     rz = rz + r * z_component;
