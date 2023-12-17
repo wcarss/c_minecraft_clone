@@ -148,6 +148,9 @@ int process_server_message(char *message, char *result)
 
   sscanf(message, "%s", buf);
 
+  // good debugging tool
+  // printf("m: %s\n", message);
+
   if (strcmp(buf, "done") == 0) {
     strcpy(result, buf);
     return 0;
@@ -161,12 +164,11 @@ int process_server_message(char *message, char *result)
       // you're invisible; don't go creating yourself over and over because of it
       createPlayer(id, px, py, pz, degx, degy);
     }
-
-    printf("m: %s\n", message);
   }
 
   if (strcmp(buf, "mob") == 0) {
     sscanf(message, "mob %d %f %f %f %f %f", &id, &px, &py, &pz, &degx, &degy);
+    showMob(id);
     setMobPosition(id, px, py, pz, degx, degy);
   }
 
@@ -194,7 +196,7 @@ int load_game_over_network(int sockfd)
 {
   int x = 0, y = 0, z = 0, t = 0;
   float px, py, pz, rx, ry;
-  int player_id;
+  int id;
 
   struct timeval tv;
   char buf[MESSAGE_LENGTH], message[MESSAGE_LENGTH];
@@ -213,13 +215,17 @@ int load_game_over_network(int sockfd)
       }
 
       sscanf(message, "%s", buf);
-      printf("received \"%s\"\n", message);
+      // good debug for world-building:
+      // printf("received \"%s\"\n", message);
 
       if (strcmp(buf, "world") == 0) {
         sscanf(message, "world %d", &identity);
       } else if (strcmp(buf, "player") == 0) {
-        sscanf(message, "player %d %f %f %f %f %f", &player_id, &px, &py, &pz, &rx, &ry);
-        createPlayer(player_id, px, py, pz, rx, ry);
+        sscanf(message, "player %d %f %f %f %f %f", &id, &px, &py, &pz, &rx, &ry);
+        createPlayer(id, px, py, pz, rx, ry);
+      } else if (strcmp(buf, "mob") == 0) {
+        sscanf(message, "mob %d %f %f %f %f %f", &id, &px, &py, &pz, &rx, &ry);
+        createMob(id, px, py, pz, rx, ry);
       } else if (strcmp(buf, "b") == 0) {
         if (sscanf(message, "b %d %d %d %d", &x, &y, &z, &t) <= 0) {
           perror("scanf: ");
@@ -271,18 +277,27 @@ int send_game_over_network(int sockfd)
     sendall(sockfd, buf, MESSAGE_LENGTH);
   }
 
+  for (i = 0; i < MOB_COUNT; i++) {
+    printf("mob %d\n", i);
+    if (mobflag[i]) {
+      memset(buf, 0, MESSAGE_LENGTH);
+      sprintf(buf, "mob %d %f %f %f %f %f", i, mobPosition[i][0], mobPosition[i][1], mobPosition[i][2], mobPosition[i][3], mobPosition[i][4]);
+      printf("wrote \"%s\"\n", buf);
+      sendall(sockfd, buf, MESSAGE_LENGTH);
+    }
+  }
+
   //sendall(sockfd, buf, MESSAGE_LENGTH / 2);
   //printf("wrote \"%s\"\n", buf);
 
   for (i = 0; i < WORLDX; i++) {
-    printf("%d", i);
-
     for (j = 0; j < WORLDY; j++) {
       for (k = 0; k < WORLDZ; k++) {
         if (world[i][j][k] != EMPTY) {
           memset(buf, 0, MESSAGE_LENGTH);
           sprintf(buf, "b %d %d %d %d", i, j, k, world[i][j][k]);
-          printf("sending \"%s\"\n", buf);
+          // good debug for world-building
+          // printf("sending \"%s\"\n", buf);
           sendall(sockfd, buf, MESSAGE_LENGTH);
           //printf("ijk: %d,%d,%d\n", i, j, k);
         }
@@ -290,7 +305,6 @@ int send_game_over_network(int sockfd)
     }
   }
 
-  printf("\n");
   memset(buf, 0, MESSAGE_LENGTH);
   sprintf(buf, "b -1 -1 -1 -1");
   sendall(sockfd, buf, MESSAGE_LENGTH);
@@ -301,7 +315,7 @@ int send_game_over_network(int sockfd)
 
 int get_stuff_from_client()
 {
-  int client_len, i, activity;
+  int client_len, i, j, activity;
   struct sockaddr_in client_address;
   struct timeval tv;
   char result[MESSAGE_LENGTH], message[MESSAGE_LENGTH];
@@ -338,7 +352,6 @@ int get_stuff_from_client()
 
     //  printf("oh I left\n");
     for (i = 0; i < num_clients; i++) {
-      //printf("in here %d\n", i);
       if (FD_ISSET(fdlist[i], &readers)) {
         activity = 1;
 

@@ -76,6 +76,7 @@ int displayList[MAX_DISPLAY_LIST][3];
 int displayCount;
 /* flag to print out frames per second */
 extern float mobPosition[MOB_COUNT][5];
+extern float mobSpeed[MOB_COUNT][3];
 extern float playerPosition[PLAYER_COUNT][5];
 extern short playerVisible[PLAYER_COUNT];
 extern int clouds_flag;

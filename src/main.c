@@ -100,8 +100,9 @@ void update()
   if ((int)(deg * 100) % 3 == 0) {
     perlin_clouds(90, 8, deg);
     clouds_flag = 1;
-    mob_action();
   }
+
+  mob_action();
 
   /* sample use of the dig flag, it is set equal to 1 when the user */
   /*  presses the space bar, you need to reset it to 0 */

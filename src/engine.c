@@ -52,6 +52,7 @@ int displayCount = 0; // count of cubes in displayList[][]
 
 /* list of mobs - number of mobs, xyz values and rotation about y */
 float mobPosition[MOB_COUNT][5];
+float mobSpeed[MOB_COUNT][3];
 /* visibility of mobs, 0 not drawn, 1 drawn */
 short mobVisible[MOB_COUNT];
 int mobflag[MOB_COUNT];
@@ -473,19 +474,20 @@ void display(void)
   /* draw mobs in the world */
   for (i = 0; i < MOB_COUNT; i++) {
     if (mobVisible[i] == 1) {
+      //printf("rendering mob %d at %f,%f,%f\n", i, mobPosition[i][0],mobPosition[i][1],mobPosition[i][2]);
       glPushMatrix();
       /* black body */
       glTranslatef(
-        mobPosition[i][0] + 0.5,
+        mobPosition[i][0],
         mobPosition[i][1] + 0.5,
-        mobPosition[i][2] + 0.5
+        mobPosition[i][2]
       );
       glMaterialfv(GL_FRONT, GL_AMBIENT, black);
       glMaterialfv(GL_FRONT, GL_DIFFUSE, gray);
       glutSolidSphere(0.5, 8, 8);
       /* white eyes */
-      glRotatef(mobPosition[i][3], 1.0, 0.0, 0.0);
-      glRotatef(mobPosition[i][4], 0.0, 1.0, 0.0);
+      glRotatef(mobPosition[i][3], 0.0, 1.0, 0.0);
+      glRotatef(mobPosition[i][4], 1.0, 0.0, 0.0);
       glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
       glTranslatef(0.3, 0.1, 0.3);
       glutSolidSphere(0.1, 4, 4);
