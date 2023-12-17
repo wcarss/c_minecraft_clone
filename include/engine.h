@@ -52,14 +52,14 @@ void getViewOrientation(float *, float *, float *);
 int addDisplayList(int, int, int);
 
 void initPlayerArray();
-void createPlayer(int number, float x, float y, float z, float playerroty);
-void setPlayerPosition(int number, float x, float y, float z, float playerroty);
+void createPlayer(int number, float x, float y, float z, float rotx, float roty);
+void setPlayerPosition(int number, float x, float y, float z, float rotx, float roty);
 void hidePlayer(int number);
 void showPlayer(int number);
 
 void initMobArray();
-void createMob(int, float, float, float, float);
-void setMobPosition(int, float, float, float, float);
+void createMob(int, float, float, float, float, float);
+void setMobPosition(int, float, float, float, float, float);
 void hideMob(int);
 void showMob(int);
 
@@ -75,8 +75,8 @@ extern int testWorld;
 int displayList[MAX_DISPLAY_LIST][3];
 int displayCount;
 /* flag to print out frames per second */
-extern float mobPosition[MOB_COUNT][4];
-extern float playerPosition[MOB_COUNT][4];
+extern float mobPosition[MOB_COUNT][5];
+extern float playerPosition[PLAYER_COUNT][5];
 extern int clouds_flag;
 extern int sun_flag;
 extern int player_flag[PLAYER_COUNT];

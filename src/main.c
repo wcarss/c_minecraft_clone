@@ -157,10 +157,10 @@ void update()
     digflag[0] = 1;
     world[highlight[0]][highlight[1]][highlight[2]] = EMPTY;
     trimout();
-    digflag[1] = -1 * flattened_rx;
-    digflag[2] = -1 * flattened_ry;
-    digflag[3] = -1 * flattened_rz;
-    printf("dug: rx, ry, rz: %d, %d, %d\n", -1 * flattened_rx, -1 * flattened_ry, -1 * flattened_rz);
+    digflag[1] = flattened_rx;
+    digflag[2] = flattened_ry;
+    digflag[3] = flattened_rz;
+    printf("dug: rx, ry, rz: %d, %d, %d\n", flattened_rx, flattened_ry, flattened_rz);
 
     dig = 0;
   }
@@ -177,6 +177,7 @@ void update()
       vy *= -1;
       vz *= -1;
       setViewPosition(vx, vy, vz);
+      setPlayerPosition(identity, vx, vy, vz, mx, mz);
     }
   }
 
@@ -224,17 +225,22 @@ int main(int argc, char* argv[])
   glutInit(&argc, argv);
   parseArgs(argc, argv);
 
+  initPlayerArray();
+  initMobArray();
+
   if (netClient) {
     server_socket = client_setup();
 
     while (1) {
       printf("trying...\n");
 
-      if (get_visible_world(server_socket) == 0) { break; }
+      if (load_game_over_network(server_socket) == 0) { break; }
     }
   } else if (netServer) {
     server_socket = server_setup();
   }
+
+  createPlayer(identity, -50, -80, -50, 0, 0);
 
   if (!netClient) {
     if (testWorld == 1) {
@@ -247,8 +253,7 @@ int main(int argc, char* argv[])
     }
   }
 
-  initPlayerArray();
-  initMobArray();
+
   trimout();
 
   initializeOpenGL(argv[0]);

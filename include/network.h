@@ -10,8 +10,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#define MESSAGE_LENGTH 64
-#define RESPONSE_LENGTH 64
+#define MESSAGE_LENGTH 128
+#define RESPONSE_LENGTH 128
 #define MAX_CLIENTS 100
 #define SERVER 0
 #define PORT 54321
@@ -26,8 +26,8 @@ extern fd_set readers;
 extern int netClient;
 extern int netServer;
 
-int send_visible_world(int sockfd);
-int get_visible_world(int sockfd);
+int send_game_over_network(int sockfd);
+int load_game_over_network(int sockfd);
 
 int server_setup();
 int client_setup();

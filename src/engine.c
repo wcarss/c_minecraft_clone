@@ -49,13 +49,13 @@ int displayList[MAX_DISPLAY_LIST][3];
 int displayCount = 0; // count of cubes in displayList[][]
 
 /* list of mobs - number of mobs, xyz values and rotation about y */
-float mobPosition[MOB_COUNT][4];
+float mobPosition[MOB_COUNT][5];
 /* visibility of mobs, 0 not drawn, 1 drawn */
 short mobVisible[MOB_COUNT];
 int mobflag[MOB_COUNT];
 
-/* list of players - number of mobs, xyz values and rotation about y */
-float playerPosition[PLAYER_COUNT][4];
+/* list of players - xyz values and x/y rotations */
+float playerPosition[PLAYER_COUNT][5];
 /* visibility of players, 0 not drawn, 1 drawn */
 short playerVisible[PLAYER_COUNT];
 int sun_flag = 0;
@@ -78,13 +78,14 @@ void initPlayerArray()
     playerPosition[i][1] = 0.0;
     playerPosition[i][2] = 0.0;
     playerPosition[i][3] = 0.0;
+    playerPosition[i][4] = 0.0;
     playerVisible[i] = 0;
   }
 }
 
 /* create player with identifier "number" at x,y,z with */
 /* heading of rotx, roty, rotz */
-void createPlayer(int number, float x, float y, float z, float playerroty)
+void createPlayer(int number, float x, float y, float z, float rotx, float roty)
 {
   if (number >= PLAYER_COUNT) {
     printf("ERROR: player number greater than %d\n", PLAYER_COUNT);
@@ -94,22 +95,29 @@ void createPlayer(int number, float x, float y, float z, float playerroty)
   playerPosition[number][0] = x;
   playerPosition[number][1] = y;
   playerPosition[number][2] = z;
-  playerPosition[number][3] = playerroty;
+  playerPosition[number][3] = rotx;
+  playerPosition[number][4] = roty;
   playerVisible[number] = 1;
 }
 
 /* move player to a new position xyz with rotation rotx,roty,rotz */
-void setPlayerPosition(int number, float x, float y, float z, float playerroty)
+void setPlayerPosition(int number, float x, float y, float z, float rotx, float roty)
 {
+  player_flag[number] = 1;
+
   if (number >= PLAYER_COUNT) {
     printf("ERROR: player number greater than %d\n", PLAYER_COUNT);
     exit(1);
   }
 
+  oldvpx = playerPosition[number][0];
+  oldvpy = playerPosition[number][1];
+  oldvpz = playerPosition[number][2];
   playerPosition[number][0] = x;
   playerPosition[number][1] = y;
   playerPosition[number][2] = z;
-  playerPosition[number][3] = playerroty;
+  playerPosition[number][3] = rotx;
+  playerPosition[number][4] = roty;
 }
 
 /* turn off drawing for player number */
@@ -144,13 +152,14 @@ void initMobArray()
     mobPosition[i][1] = 0.0;
     mobPosition[i][2] = 0.0;
     mobPosition[i][3] = 0.0;
+    mobPosition[i][4] = 0.0;
     mobVisible[i] = 0;
   }
 }
 
 /* create mob with identifier "number" at x,y,z with */
 /* heading of rotx, roty, rotz */
-void createMob(int number, float x, float y, float z, float mobroty)
+void createMob(int number, float x, float y, float z, float rotx, float roty)
 {
   if (number >= MOB_COUNT) {
     printf("ERROR: mob number greater than %d\n", MOB_COUNT);
@@ -160,12 +169,13 @@ void createMob(int number, float x, float y, float z, float mobroty)
   mobPosition[number][0] = x;
   mobPosition[number][1] = y;
   mobPosition[number][2] = z;
-  mobPosition[number][3] = mobroty;
+  mobPosition[number][3] = rotx;
+  mobPosition[number][4] = roty;
   mobVisible[number] = 1;
 }
 
 /* move mob to a new position xyz with rotation rotx,roty,rotz */
-void setMobPosition(int number, float x, float y, float z, float mobroty)
+void setMobPosition(int number, float x, float y, float z, float rotx, float roty)
 {
   if (number >= MOB_COUNT) {
     printf("ERROR: mob number greater than %d\n", MOB_COUNT);
@@ -175,7 +185,9 @@ void setMobPosition(int number, float x, float y, float z, float mobroty)
   mobPosition[number][0] = x;
   mobPosition[number][1] = y;
   mobPosition[number][2] = z;
-  mobPosition[number][3] = mobroty;
+  mobPosition[number][3] = rotx;
+  mobPosition[number][4] = roty;
+
   mobflag[number] = 1;
 }
 
@@ -593,7 +605,6 @@ void keyboard(unsigned char key, int x, int y)
     smoothShading = 0;
     textures = 0;
     init();
-    glutPostRedisplay();
     break;
 
   case '2':  // draw polygons as filled
@@ -602,7 +613,6 @@ void keyboard(unsigned char key, int x, int y)
     smoothShading = 0;
     textures = 0;
     init();
-    glutPostRedisplay();
     break;
 
   case '3':  // diffuse and specular lighting, flat shading
@@ -611,7 +621,6 @@ void keyboard(unsigned char key, int x, int y)
     smoothShading = 0;
     textures = 0;
     init();
-    glutPostRedisplay();
     break;
 
   case '4':  // diffuse and specular lighting, smooth shading
@@ -620,7 +629,6 @@ void keyboard(unsigned char key, int x, int y)
     smoothShading = 1;
     textures = 0;
     init();
-    glutPostRedisplay();
     break;
 
   case '5':  // texture with  smooth shading
@@ -629,14 +637,9 @@ void keyboard(unsigned char key, int x, int y)
     smoothShading = 1;
     textures = 1;
     init();
-    glutPostRedisplay();
     break;
 
   case 'w':  // forward motion
-    player_flag[0] = 1;
-    oldvpx = vpx;
-    oldvpy = vpy;
-    oldvpz = vpz;
     rotx = (mvx / 180.0 * 3.141592);
     roty = (mvy / 180.0 * 3.141592);
     vpx -= sin(roty) * PLAYER_SPEED;
@@ -648,14 +651,10 @@ void keyboard(unsigned char key, int x, int y)
 
     vpz += cos(roty) * PLAYER_SPEED;
     collisionResponse();
-    glutPostRedisplay();
+    setPlayerPosition(identity, vpx, vpy, vpz, rotx, roty);
     break;
 
   case 's':  // backward motion
-    player_flag[0] = 1;
-    oldvpx = vpx;
-    oldvpy = vpy;
-    oldvpz = vpz;
     rotx = (mvx / 180.0 * 3.141592);
     roty = (mvy / 180.0 * 3.141592);
     vpx += sin(roty) * PLAYER_SPEED;
@@ -667,31 +666,27 @@ void keyboard(unsigned char key, int x, int y)
 
     vpz -= cos(roty) * PLAYER_SPEED;
     collisionResponse();
-    glutPostRedisplay();
+    setPlayerPosition(identity, vpx, vpy, vpz, rotx, roty);
     break;
 
   case 'a':  // strafe left motion
-    player_flag[0] = 1;
-    oldvpx = vpx;
-    oldvpy = vpy;
-    oldvpz = vpz;
+    rotx = (mvx / 180.0 * 3.141592);
     roty = (mvy / 180.0 * 3.141592);
     vpx += cos(roty) * PLAYER_SPEED;
     vpz += sin(roty) * PLAYER_SPEED;
     collisionResponse();
-    glutPostRedisplay();
+    setPlayerPosition(identity, vpx, vpy, vpz, rotx, roty);
+
     break;
 
   case 'd':  // strafe right motion
-    player_flag[0] = 1;
-    oldvpx = vpx;
-    oldvpy = vpy;
-    oldvpz = vpz;
+    rotx = (mvx / 180.0 * 3.141592);
     roty = (mvy / 180.0 * 3.141592);
     vpx -= cos(roty) * PLAYER_SPEED;
     vpz -= sin(roty) * PLAYER_SPEED;
     collisionResponse();
-    glutPostRedisplay();
+    setPlayerPosition(identity, vpx, vpy, vpz, rotx, roty);
+
     break;
 
   case 'f':  // toggle flying controls
@@ -704,6 +699,8 @@ void keyboard(unsigned char key, int x, int y)
     dig = 1;
     break;
   }
+
+  glutPostRedisplay();
 }
 
 /* load a texture from a file */

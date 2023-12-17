@@ -19,7 +19,7 @@ void sample_mob_code()
 
     /* move mob 0 and rotate */
     /* set mob 0 position */
-    setMobPosition(0, mob0x, mob0y, mob0z, mob0ry);
+    setMobPosition(0, mob0x, mob0y, mob0z, mob0ry, 0);
 
     /* move mob 0 in the x axis */
     if (increasingmob0 == 1) {
@@ -38,7 +38,7 @@ void sample_mob_code()
     if (mob0ry > 360.0) { mob0ry -= 360.0; }
 
     /* move mob 1 and rotate */
-    setMobPosition(1, mob1x, mob1y, mob1z, mob1ry);
+    setMobPosition(1, mob1x, mob1y, mob1z, mob1ry, 0);
 
     /* move mob 1 in the z axis */
     /* when mob is moving away it is visible, when moving back it */
@@ -64,10 +64,10 @@ void sample_mob_code()
 
 void place_mobs()
 {
-  createMob(0, 45.0, 18.0, 45.0, 0.0);
-  createMob(1, 45.0, 18.0, 45.0, 90.0);
-  createMob(2, 45.0, 18.0, 45.0, 180.0);
-  createMob(3, 45.0, 18.0, 45.0, 360.0);
+  createMob(0, 45.0, 18.0, 45.0, 0.0, 0);
+  createMob(1, 45.0, 18.0, 45.0, 90.0, 0);
+  createMob(2, 45.0, 18.0, 45.0, 180.0, 0);
+  createMob(3, 45.0, 18.0, 45.0, 360.0, 0);
 }
 
 void mob_action()
@@ -111,7 +111,7 @@ void mob_action()
 
 //    }while((old_mobx == mobx[i] && old_moby == moby[i]) || world[(int)mobx[i]][(int)moby[i]][(int)mobz[i]] != EMPTY);
 
-    setMobPosition(i, mobx[i], moby[i], mobz[i], mobr[i]);
+    setMobPosition(i, mobx[i], moby[i], mobz[i], mobr[i], 0);
   }
 }
 
@@ -165,9 +165,9 @@ void build_test_world()
   }
 
   /* create two sample mobs */
-  createMob(0, 50.0, 25.0, 52.0, 0.0);
-  createMob(1, 50.0, 25.0, 52.0, 0.0);
+  createMob(0, 50.0, 25.0, 52.0, 0.0, 0);
+  createMob(1, 50.0, 25.0, 52.0, 0.0, 0);
 
   /* create sample player */
-  createPlayer(0, 52.0, 27.0, 52.0, 0.0);
+  createPlayer(0, 52.0, 27.0, 52.0, 0.0, 0.0);
 }

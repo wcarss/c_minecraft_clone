@@ -2,7 +2,7 @@
 /* Written by Wyatt Carss in January 2011 */
 
 #define _st(x) printf("Status is %d.\n", x);
-#define STACK_STRING_LENGTH 64
+#define STACK_STRING_LENGTH 128
 
 struct _elmnt {
   char str[STACK_STRING_LENGTH];
