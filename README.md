@@ -33,18 +33,30 @@ So I've recently (December 2023ish) picked this back up with a bit of a resoluti
 - refactor out most of the global state into passed context objects
 - possibly port to C++ for the sake of adding classes
 - try to make it run on other systems than my mac
-- sane-ify initialization order for the sake of networking (e.g. clients should request their identity from the server before initializing most of the world)
-- enable networked players to see each other and fill out network protocol
 - better network error handling (like server quits)
+- handle clients other than the most recent client quitting/rejoining (right now if client 1 exits and rejoins while client 2+ exist, client 1 will be assigned client 2's id)
 - more sophisticated movement physics to reduce choppy motion feeling
 - "placing cubes"
+- further fill out network protocol
 - possibly an inventory / menu
 - timer-based cube removal to increase mincraft-feels
 - textures (maybe waiting for a move to modern opengl)
 - rewrite opengl code to use 3.3+-style shaders and functions, rather than the 2.1-style fixed function pipeline this project was originally built in
 - chunks for bigger maps? threading?
 
-### v0.03 - 2023ish
+### v0.04 - 2023-12-18
+
+- enable networked players to see each other, with correct position and orientation over time
+- enable networked digs, including from client A -> server -> client B and back
+- sane-ify initialization order for the sake of networking (e.g. clients should request their identity from the server before initializing most of the world)
+- window titles now reflect client ids
+- some small orientation and networking bugfixes
+- allow random seed to be specified and also print the seed-in-use out
+- sped up network FPS by lowering the timeval set to wait for incoming data
+- also sped up general FPS by cutting steps for block highlighting in half
+- fixed up mobs, got them running around in caves, looking the right direction, and networked
+
+### v0.03 - 2023-12-13
 
 - finally implemented digging properly, including a screenspace crosshair and mouselook-driven cube highlights so you can see what cube you're going to remove with confidence
 - restored working culling, improving framerate from 15ish fps up to 50-70ish

@@ -395,7 +395,11 @@ void drawCube(int i, int j, int k)
     glLineWidth(2.0);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glutSolidCube(1.01);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    if (lineDrawing == 1) {
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    } else {
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
   }
 
   glPopMatrix();
