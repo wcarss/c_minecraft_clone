@@ -84,6 +84,9 @@ extern int player_flag[PLAYER_COUNT];
 extern int highlight[3];
 extern int showFPS;
 extern int fullscreen;
+extern int randomSeedGiven;
+extern int randomSeed;
+
 /* flag to indicate removal of cube the viewer is facing */
 extern int displayAllCubes;
 extern int dig;

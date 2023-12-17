@@ -217,8 +217,19 @@ void parseArgs(int argc, char *argv[])
       netServer = 1;
     }
 
+    // read random seed if supplied
+    if (strcmp(argv[i], "-seed") == 0) {
+      if (argc <= i+1) {
+        printf("-seed passed without required INT parameter");
+        exit(1);
+      }
+      sscanf(argv[i+1], "%d", &randomSeed);
+      randomSeedGiven = 1;
+      printf("set seed to %d\n", randomSeed);
+    }
+
     if (strcmp(argv[i], "-help") == 0) {
-      printf("Usage: a4 [-full] [-drawall] [-testworld] [-showFPS] [-client] [-server]\n");
+      printf("Usage: a4 [-full] [-drawall] [-testworld] [-showFPS] [-client] [-server] [-seed INT]\n");
       exit(0);
     }
   }
@@ -232,6 +243,12 @@ int main(int argc, char* argv[])
 
   initPlayerArray();
   initMobArray();
+
+  if (!randomSeedGiven) {
+    randomSeed = time(NULL);
+  }
+  printf("setting random randomSeed: %d\n", randomSeed);
+  srand(randomSeed);
 
   if (netClient) {
     server_socket = client_setup();

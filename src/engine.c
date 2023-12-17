@@ -43,6 +43,8 @@ int displayAllCubes = 0;  // draw all of the cubes in the world when 1
 int testWorld = 0;  // sample world for timing tests
 int showFPS = 0;  // turn on frame per second output
 int fullscreen = 0; // render a fullscreen window or not
+int randomSeedGiven = 0; // flag for whether a specific seed was supplied
+int randomSeed = 0; // random seed will be set to time(NULL) if not passed in
 
 /* list of cubes to display */
 int displayList[MAX_DISPLAY_LIST][3];

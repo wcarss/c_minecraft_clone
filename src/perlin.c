@@ -144,7 +144,13 @@ void normalize3(double v[3])
 void perlin_init(void)
 {
   int i, j, k;
-  srand(time(NULL));
+
+  // modified by wyatt in 2023: no longer seeding rand here,
+  // which was previously done via srand(time(NULL)), instead
+  // I will call srand externally and can set it for determinism.
+
+  // I briefly looked at passing a seed in, but this code is kinda
+  // idiosyncratically set up to allow multiple entrypoints.
 
   for (i = 0 ; i < B ; i++) {
     p[i] = i;
