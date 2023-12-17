@@ -394,7 +394,7 @@ int process_client_message(char *message)
   if (strcmp(buf, "player") == 0) {
     sscanf(message, "player %d %f %f %f %f %f", &id, &px, &py, &pz, &degx, &degy);
     setPlayerPosition(id, px, py, pz, degx, degy);
-    player_flag[id] = 0;
+    player_flag[id] = 1;
     return 0;
   }
 
@@ -402,6 +402,10 @@ int process_client_message(char *message)
     sscanf(message, "dig %d %d %d", &dx, &dy, &dz);
     printf("got dig: %d %d %d\n", dx, dy, dz);
     world[dx][dy][dz] = EMPTY;
+    digflag[0] = 1;
+    digflag[1] = dx;
+    digflag[2] = dy;
+    digflag[3] = dz;
     trimout();
     return 0;
   }
