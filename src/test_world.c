@@ -87,7 +87,7 @@ void mob_action()
   float mob_speed = 0.3;
   int outcome;
   int rand_max = 64;
-  float old_x, old_y, old_z;
+  float old_x, old_z;
   for (int i = 0; i < 4; i++) {
     outcome = rand() % rand_max; // [0, rand_max) so ends at rand_max - 1
 
@@ -96,7 +96,6 @@ void mob_action()
     } else if (outcome < rand_max - 4) {
       // move 50/64 of the time
       old_x = mobPosition[i][0];
-      old_y = mobPosition[i][1];
       old_z = mobPosition[i][2];
       mobPosition[i][0] += mobSpeed[i][0];
       mobPosition[i][1] += mobSpeed[i][1];
