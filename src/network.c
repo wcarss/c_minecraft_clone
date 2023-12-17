@@ -155,7 +155,13 @@ int process_server_message(char *message, char *result)
 
   if (strcmp(buf, "player") == 0) {
     sscanf(message, "player %d %f %f %f %f %f", &id, &px, &py, &pz, &degx, &degy);
-    setPlayerPosition(id, px, py, pz, degx, degy);
+    if (playerVisible[id]) {
+      setPlayerPosition(id, px, py, pz, degx, degy);
+    } else if (id != identity) {
+      // you're invisible; don't go creating yourself over and over because of it
+      createPlayer(id, px, py, pz, degx, degy);
+    }
+
     printf("m: %s\n", message);
   }
 
@@ -327,6 +333,7 @@ int get_stuff_from_client()
       send_game_over_network(fdlist[num_clients]);
       num_clients++;
       createPlayer(num_clients, -50, -80, -50, 0, 0);
+      player_flag[num_clients] = 1;
     }
 
     //  printf("oh I left\n");

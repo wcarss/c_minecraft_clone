@@ -77,6 +77,7 @@ int displayCount;
 /* flag to print out frames per second */
 extern float mobPosition[MOB_COUNT][5];
 extern float playerPosition[PLAYER_COUNT][5];
+extern short playerVisible[PLAYER_COUNT];
 extern int clouds_flag;
 extern int sun_flag;
 extern int player_flag[PLAYER_COUNT];
