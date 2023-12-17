@@ -250,13 +250,13 @@ int send_game_over_network(int sockfd)
   printf("wrote \"%s\"\n", buf);
   sendall(sockfd, buf, MESSAGE_LENGTH);
 
-  for (i = 0; i < num_clients; i++) {
+  for (i = 0; i <= num_clients; i++) {
     memset(buf, 0, MESSAGE_LENGTH);
 
     if (i == 0) {
       getViewPosition(&px, &py, &pz);
       getViewOrientation(&rx, &ry, &rz);
-      sprintf(buf, "player %d %f %f %f %f %f", 0, px, py, pz, rx, ry);
+      sprintf(buf, "player %d %f %f %f %f %f", 0, px, py, pz, ry, rx);
     } else {
       sprintf(buf, "player %d %f %f %f %f %f", i, playerPosition[i][0], playerPosition[i][1], playerPosition[i][2], playerPosition[i][3], playerPosition[i][4]);
     }
@@ -331,15 +331,15 @@ int get_stuff_from_client()
 
     //  printf("oh I left\n");
     for (i = 0; i < num_clients; i++) {
-      printf("in here %d\n", i);
+      //printf("in here %d\n", i);
       if (FD_ISSET(fdlist[i], &readers)) {
         activity = 1;
 
-        printf("in FD_ISSET\n");
+        //printf("in FD_ISSET\n");
         // <0 indicates error
         if ((client_len = get_all(fdlist[i], message, MESSAGE_LENGTH)) < 0) {
           // closing connections is probably overall broken
-          printf("in <0 branch; message: %s\n", message);
+          //printf("in <0 branch; message: %s\n", message);
           if (client_len < 0) {
             perror("failure during read: ");
           // this used to be an else-block:
@@ -360,7 +360,7 @@ int get_stuff_from_client()
             // }
           }
         } else {
-          printf("processing message from client: '%s'", message);
+          //printf("processing message from client: '%s'", message);
           process_client_message(message);
         }
       }
@@ -394,7 +394,8 @@ int process_client_message(char *message)
   if (strcmp(buf, "player") == 0) {
     sscanf(message, "player %d %f %f %f %f %f", &id, &px, &py, &pz, &degx, &degy);
     setPlayerPosition(id, px, py, pz, degx, degy);
-    player_flag[id] = 1;
+    player_flag[id] = 0;
+    return 0;
   }
 
   if (strcmp(buf, "dig") == 0) {
@@ -402,9 +403,10 @@ int process_client_message(char *message)
     printf("got dig: %d %d %d\n", dx, dy, dz);
     world[dx][dy][dz] = EMPTY;
     trimout();
-  } else {
-    fprintf(stderr, "unexpected message from client...\n");
+    return 0;
   }
+
+  fprintf(stderr, "unexpected message from client: %s\n", buf);
 
   return 0;
 }
@@ -493,7 +495,7 @@ int send_stuff_to_server()
     getViewPosition(&px, &py, &pz);
     getViewOrientation(&rx, &ry, &rz);
     memset(buf, 0, MESSAGE_LENGTH);
-    sprintf(buf, "player %d %f %f %f %f %f", identity, px, py, pz, rx, ry);
+    sprintf(buf, "player %d %f %f %f %f %f", identity, px, py, pz, ry, rx);
     sendall(server_socket, buf, MESSAGE_LENGTH);
   }
 

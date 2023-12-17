@@ -26,7 +26,7 @@ float vpx = -50.0, vpy = -80.0, vpz = -50.0;
 float oldvpx, oldvpy, oldvpz;
 
 /* mouse direction coordiates */
-float mvx = 0.0, mvy = 45.0, mvz = 0.0;
+float mvx = 0.0, mvy = 0.0, mvz = 0.0;
 
 /* location for the light source (the sun), the first three
      values are the x,y,z coordinates */
@@ -84,7 +84,7 @@ void initPlayerArray()
 }
 
 /* create player with identifier "number" at x,y,z with */
-/* heading of rotx, roty, rotz */
+/* heading of rotx, roty, rotz in deg */
 void createPlayer(int number, float x, float y, float z, float rotx, float roty)
 {
   if (number >= PLAYER_COUNT) {
@@ -482,7 +482,8 @@ void display(void)
       glMaterialfv(GL_FRONT, GL_DIFFUSE, gray);
       glutSolidSphere(0.5, 8, 8);
       /* white eyes */
-      glRotatef(mobPosition[i][3], 0.0, 1.0, 0.0);
+      glRotatef(mobPosition[i][3], 1.0, 0.0, 0.0);
+      glRotatef(mobPosition[i][4], 0.0, 1.0, 0.0);
       glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
       glTranslatef(0.3, 0.1, 0.3);
       glutSolidSphere(0.1, 4, 4);
@@ -498,17 +499,20 @@ void display(void)
       glPushMatrix();
       /* white body */
       glTranslatef(
-        playerPosition[i][0] + 0.5,
-        playerPosition[i][1] + 0.5,
-        playerPosition[i][2] + 0.5
+        -1 * playerPosition[i][0],
+        -1 * playerPosition[i][1] + 0.5,
+        -1 * playerPosition[i][2]
       );
       glMaterialfv(GL_FRONT, GL_AMBIENT, white);
       glMaterialfv(GL_FRONT, GL_DIFFUSE, gray);
       glutSolidSphere(0.5, 8, 8);
+      // mouse left looking left, mouse right looking right
+      // mouse up looking up, mouse down looking down
+      glRotatef(playerPosition[i][3], 0.0, -1.0, 0.0);
+      glRotatef(playerPosition[i][4], -1.0, 0.0, 0.0);
       /* red eyes */
-      glRotatef(playerPosition[i][3], 0.0, 1.0, 0.0);
       glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);
-      glTranslatef(0.3, 0.1, 0.3);
+      glTranslatef(0.3, 0.1, -0.3);
       glutSolidSphere(0.1, 4, 4);
       glTranslatef(-0.6, 0.0, 0.0);
       glutSolidSphere(0.1, 4, 4);
@@ -651,7 +655,7 @@ void keyboard(unsigned char key, int x, int y)
 
     vpz += cos(roty) * PLAYER_SPEED;
     collisionResponse();
-    setPlayerPosition(identity, vpx, vpy, vpz, rotx, roty);
+    setPlayerPosition(identity, vpx, vpy, vpz, mvx, mvy);
     break;
 
   case 's':  // backward motion
@@ -666,7 +670,7 @@ void keyboard(unsigned char key, int x, int y)
 
     vpz -= cos(roty) * PLAYER_SPEED;
     collisionResponse();
-    setPlayerPosition(identity, vpx, vpy, vpz, rotx, roty);
+    setPlayerPosition(identity, vpx, vpy, vpz, mvx, mvy);
     break;
 
   case 'a':  // strafe left motion
@@ -675,7 +679,7 @@ void keyboard(unsigned char key, int x, int y)
     vpx += cos(roty) * PLAYER_SPEED;
     vpz += sin(roty) * PLAYER_SPEED;
     collisionResponse();
-    setPlayerPosition(identity, vpx, vpy, vpz, rotx, roty);
+    setPlayerPosition(identity, vpx, vpy, vpz, mvx, mvy);
 
     break;
 
@@ -685,7 +689,7 @@ void keyboard(unsigned char key, int x, int y)
     vpx -= cos(roty) * PLAYER_SPEED;
     vpz -= sin(roty) * PLAYER_SPEED;
     collisionResponse();
-    setPlayerPosition(identity, vpx, vpy, vpz, rotx, roty);
+    setPlayerPosition(identity, vpx, vpy, vpz, mvx, mvy);
 
     break;
 
@@ -753,6 +757,8 @@ void motion(int x, int y)
     motion_initialized = 1;
   }
 
+  // mvx is "rotation about the x axis", i.e. "looking up and down"
+  // mvy is "rotation about the y axis", i.e. "looking left/right"
   mvx += (float) y - oldy;
   mvy += (float) x - oldx;
   oldx = x;

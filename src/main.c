@@ -108,6 +108,11 @@ void update()
   getViewOrientation(&mx, &my, &mz);
   getViewPosition(&vx, &vy, &vz);
 
+  if (dig == 1) {
+    printf("vx,vy,vz: %.2f,%.2f,%.2f\n", vx, vy, vz);
+    printf("(id) px,py,pz: (%d) %.2f,%.2f,%.2f\n", identity, playerPosition[identity][0], playerPosition[identity][1], playerPosition[identity][2]);
+  }
+
   vx *= -1;
   vy *= -1;
   vz *= -1;
@@ -177,7 +182,7 @@ void update()
       vy *= -1;
       vz *= -1;
       setViewPosition(vx, vy, vz);
-      setPlayerPosition(identity, vx, vy, vz, mx, mz);
+      setPlayerPosition(identity, vx, vy, vz, mx, my);
     }
   }
 
@@ -241,6 +246,8 @@ int main(int argc, char* argv[])
   }
 
   createPlayer(identity, -50, -80, -50, 0, 0);
+  // if you're visible to yourself you'll block your camera
+  hidePlayer(identity);
 
   if (!netClient) {
     if (testWorld == 1) {
