@@ -9,6 +9,8 @@
 #include "engine.h"
 #include "network.h"
 
+int keyStates[256];
+
 /* flags used to control the appearance of the image */
 int lineDrawing = 0;  // draw polygons as solid or lines
 int lighting = 1;  // use diffuse and specular lighting
@@ -22,7 +24,7 @@ GLuint   textureID[1];
 float windowWidth, windowHeight;
 
 /* viewpoint coordinates */
-float vpx = -50.0, vpy = -80.0, vpz = -50.0;
+float pxspeed, pyspeed, pzspeed;
 float oldvpx, oldvpy, oldvpz;
 
 /* mouse direction coordiates */
@@ -112,10 +114,9 @@ void setPlayerPosition(int number, float x, float y, float z, float rotx, float 
   }
 
   if (number == identity) {
+    printf("p%d(x,y,z): %f,%f,%f\n", number, playerPosition[number][0], playerPosition[number][1], playerPosition[number][2]);
     player_flag[number] = 1;
-    vpx = x;
-    vpy = y;
-    vpz = z;
+
     oldvpx = playerPosition[number][0];
     oldvpy = playerPosition[number][1];
     oldvpz = playerPosition[number][2];
@@ -239,16 +240,16 @@ GLfloat* getLightPosition()
 /* functions store and return the current location of the viewpoint */
 void getViewPosition(float *x, float *y, float *z)
 {
-  *x = vpx;
-  *y = vpy;
-  *z = vpz;
+  *x = playerPosition[identity][0];
+  *y = playerPosition[identity][1];
+  *z = playerPosition[identity][2];
 }
 
 void setViewPosition(float x, float y, float z)
 {
-  vpx = x;
-  vpy = y;
-  vpz = z;
+  playerPosition[identity][0] = x;
+  playerPosition[identity][1] = y;
+  playerPosition[identity][2] = z;
 }
 
 /* returns the previous location of the viewpoint */
@@ -259,12 +260,19 @@ void getOldViewPosition(float *x, float *y, float *z)
   *z = oldvpz;
 }
 
+void setViewOrientation(float xaxis, float yaxis, float zaxis)
+{
+  playerPosition[identity][3] = xaxis;
+  playerPosition[identity][4] = yaxis;
+  // ignore zaxis;
+}
+
 /* returns the current orientation of the viewpoint */
 void getViewOrientation(float *xaxis, float *yaxis, float *zaxis)
 {
-  *xaxis = mvx;
-  *yaxis = mvy;
-  *zaxis = mvz;
+  *xaxis = playerPosition[identity][3];
+  *yaxis = playerPosition[identity][4];
+  *zaxis = 0; // we don't store this or use it
 }
 
 /* add the cube at world[x][y][z] to the display list and */
@@ -432,16 +440,16 @@ void display(void)
 
   glEnable(GL_DEPTH_TEST);
 
-  glRotatef(mvx, 1.0, 0.0, 0.0);
-  glRotatef(mvy, 0.0, 1.0, 0.0);
-  /* Subtract 0.5 to raise viewpoint slightly above objects. */
+  glRotatef(playerPosition[identity][3], 1.0, 0.0, 0.0);
+  glRotatef(playerPosition[identity][4], 0.0, 1.0, 0.0);
+  /* Subtract 1 to raise viewpoint slightly above objects. */
   /* Gives the impression of a head on top of a body. */
-  glTranslatef(vpx, vpy - 0.5, vpz);
+  glTranslatef(-playerPosition[identity][0], -playerPosition[identity][1] - 1.2, -playerPosition[identity][2]);
 
   /* set viewpoint light position */
-  viewpointLight[0] = -vpx;
-  viewpointLight[1] = -vpy;
-  viewpointLight[2] = -vpz;
+  viewpointLight[0] = playerPosition[identity][0];
+  viewpointLight[1] = playerPosition[identity][1];
+  viewpointLight[2] = playerPosition[identity][2];
   glLightfv(GL_LIGHT1, GL_POSITION, viewpointLight);
 
   /* draw surfaces as either smooth or flat shaded */
@@ -512,9 +520,9 @@ void display(void)
       glPushMatrix();
       /* white body */
       glTranslatef(
-        -1 * playerPosition[i][0],
-        -1 * playerPosition[i][1] + 0.5,
-        -1 * playerPosition[i][2]
+        playerPosition[i][0],
+        playerPosition[i][1] + 0.5,
+        playerPosition[i][2]
       );
       glMaterialfv(GL_FRONT, GL_AMBIENT, white);
       glMaterialfv(GL_FRONT, GL_DIFFUSE, gray);
@@ -603,12 +611,17 @@ void reshape(int w, int h)
   glLoadIdentity();
 }
 
+void keyboard_up(unsigned char key, int x, int y)
+{
+  keyStates[key] = 0;
+  // useful for debugging keystates:
+  // printf("Key Up %c\n", key);
+}
+
 /* respond to keyboard events */
 void keyboard(unsigned char key, int x, int y)
 {
-  const double PLAYER_SPEED = 0.8;
-  float rotx, roty;
-  //static int lighton = 1;
+  keyStates[key] = 1;
 
   switch (key) {
   case 27:
@@ -656,60 +669,9 @@ void keyboard(unsigned char key, int x, int y)
     init();
     break;
 
-  case 'w':  // forward motion
-    rotx = (mvx / 180.0 * 3.141592);
-    roty = (mvy / 180.0 * 3.141592);
-    vpx -= sin(roty) * PLAYER_SPEED;
-
-    // turn off y motion so you can't fly
-    if (flycontrol == 1) {
-      vpy += sin(rotx) * PLAYER_SPEED;
-    }
-
-    vpz += cos(roty) * PLAYER_SPEED;
-    collisionResponse();
-    setPlayerPosition(identity, vpx, vpy, vpz, mvx, mvy);
-    break;
-
-  case 's':  // backward motion
-    rotx = (mvx / 180.0 * 3.141592);
-    roty = (mvy / 180.0 * 3.141592);
-    vpx += sin(roty) * PLAYER_SPEED;
-
-    // turn off y motion so you can't fly
-    if (flycontrol == 1) {
-      vpy -= sin(rotx) * PLAYER_SPEED;
-    }
-
-    vpz -= cos(roty) * PLAYER_SPEED;
-    collisionResponse();
-    setPlayerPosition(identity, vpx, vpy, vpz, mvx, mvy);
-    break;
-
-  case 'a':  // strafe left motion
-    rotx = (mvx / 180.0 * 3.141592);
-    roty = (mvy / 180.0 * 3.141592);
-    vpx += cos(roty) * PLAYER_SPEED;
-    vpz += sin(roty) * PLAYER_SPEED;
-    collisionResponse();
-    setPlayerPosition(identity, vpx, vpy, vpz, mvx, mvy);
-
-    break;
-
-  case 'd':  // strafe right motion
-    rotx = (mvx / 180.0 * 3.141592);
-    roty = (mvy / 180.0 * 3.141592);
-    vpx -= cos(roty) * PLAYER_SPEED;
-    vpz -= sin(roty) * PLAYER_SPEED;
-    collisionResponse();
-    setPlayerPosition(identity, vpx, vpy, vpz, mvx, mvy);
-
-    break;
-
   case 'f':  // toggle flying controls
     if (flycontrol == 0) { flycontrol = 1; }
     else { flycontrol = 0; }
-
     break;
 
   case ' ':  // toggle digging controls
@@ -774,6 +736,7 @@ void motion(int x, int y)
   // mvy is "rotation about the y axis", i.e. "looking left/right"
   mvx += (float) y - oldy;
   mvy += (float) x - oldx;
+  setViewOrientation(mvx, mvy, 0);
   oldx = x;
   oldy = y;
   glutPostRedisplay();
@@ -822,6 +785,7 @@ void initializeOpenGL(char *windowTitle)
   glutReshapeFunc(reshape);
   glutDisplayFunc(display);
   glutKeyboardFunc(keyboard);
+  glutKeyboardUpFunc(keyboard_up);
   glutPassiveMotionFunc(motion);
   glutMouseFunc(mouse);
   glutIdleFunc(update);

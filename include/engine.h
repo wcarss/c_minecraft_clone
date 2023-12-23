@@ -64,9 +64,9 @@ void hideMob(int);
 void showMob(int);
 
 void update();
-void collisionResponse();
 void buildDisplayList();
 
+extern int keyStates[256];
 /* flag which is set to 1 when flying behaviour is desired */
 extern int flycontrol;
 /* flag used to indicate that the test world should be used */
@@ -82,6 +82,7 @@ extern short playerVisible[PLAYER_COUNT];
 extern int clouds_flag;
 extern int sun_flag;
 extern int player_flag[PLAYER_COUNT];
+extern float pxspeed, pyspeed, pzspeed;
 extern int highlight[3];
 extern int showFPS;
 extern int fullscreen;

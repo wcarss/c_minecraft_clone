@@ -14,43 +14,13 @@
 #include "world.h"
 #include "network.h"
 
-/* -performs collision detection and response */
-/*  sets new xyz  to position of the viewpoint after collision */
-/* -implements gravity by updating y position of viewpoint */
-/* note that the world coordinates will be the negative value of
-   the array indices */
-void collisionResponse()
-{
-  /* implement collision, gravity, and climbing onto single cubes here */
-  float x, y, z;
-  getViewPosition(&x, &y, &z);
-  x *= -1;
-  y *= -1;
-  z *= -1;
-
-  if (flycontrol == 1) { return; }
-
-  if (((world[(int)x][(int)y][(int)z] != 0) && (world[(int)x][(int)y][(int)z] != WHITE)) ||
-      ((world[(int)x][(int)y + 1][(int)z] != 0) && (world[(int)x][(int)y + 1][(int)z] != WHITE))) {
-    if (world[(int)x][(int)y + 1][(int)z] == 0) {
-      y++;
-      x *= -1;
-      y *= -1;
-      z *= -1;
-    } else {
-      getOldViewPosition(&x, &y, &z);
-    }
-
-    setViewPosition(x, y, z);
-  }
-}
-
 /* background process, it is called when there are no other events */
 /* -gravity is also implemented here, duplicate of collisionResponse */
 /* -for assignment 3, mob control and digging goes here */
 void update()
 {
   float vx, vy, vz, mx, my, mz, rx, ry, rz;
+  float oldvx, oldvy, oldvz;
   int flattened_rx, flattened_ry, flattened_rz;
   // sample_mob_code(); // came with the file; can be replaced
   static int save = 0;
@@ -109,14 +79,114 @@ void update()
   getViewOrientation(&mx, &my, &mz);
   getViewPosition(&vx, &vy, &vz);
 
-  if (dig == 1) {
-    printf("vx,vy,vz: %.2f,%.2f,%.2f\n", vx, vy, vz);
-    printf("(id) px,py,pz: (%d) %.2f,%.2f,%.2f\n", identity, playerPosition[identity][0], playerPosition[identity][1], playerPosition[identity][2]);
+  const double PLAYER_SPEED = 0.64;
+  const double PLAYER_ACCEL = 0.2;
+  float rotx = mx / 180.0 * 3.141592;
+  float roty = my / 180.0 * 3.141592;
+  float oldxspeed = pxspeed;
+  float oldzspeed = pzspeed;
+
+  if (keyStates['w']) { // forward motion
+    pxspeed += sin(roty) * PLAYER_ACCEL;
+    pzspeed -= cos(roty) * PLAYER_ACCEL;
+
+    // turn off y motion so you can't usually fly
+    if (flycontrol == 1) {
+      pyspeed -= sin(rotx) * PLAYER_ACCEL;
+    }
+  } else if (keyStates['s']) {  // backward motion
+    pxspeed -= sin(roty) * PLAYER_ACCEL;
+    pzspeed += cos(roty) * PLAYER_ACCEL;
+
+    // turn off y motion so you can't usually fly
+    if (flycontrol == 1) {
+      pyspeed += sin(rotx) * PLAYER_ACCEL;
+    }
   }
 
-  vx *= -1;
-  vy *= -1;
-  vz *= -1;
+  if (keyStates['a']) { // strafe left motion
+    pxspeed -= cos(roty) * PLAYER_ACCEL;
+    pzspeed -= sin(roty) * PLAYER_ACCEL;
+  } else if (keyStates['d']) { // strafe right motion
+    pxspeed += cos(roty) * PLAYER_ACCEL;
+    pzspeed += sin(roty) * PLAYER_ACCEL;
+  }
+
+  float pxspeed_squared = pxspeed*pxspeed;
+  float pzspeed_squared = pzspeed*pzspeed;
+  float playerspeed_squared = PLAYER_SPEED*PLAYER_SPEED;
+  // limit max-speed in any direction to PLAYER_SPEED
+  if (pxspeed_squared + pzspeed_squared > playerspeed_squared) {
+    pxspeed = oldxspeed;
+    pzspeed = oldzspeed;
+  }
+
+  oldvx = vx;
+  oldvy = vy;
+  oldvz = vz;
+
+  vx += pxspeed;
+  vy += pyspeed;
+  vz += pzspeed;
+
+  const float MAX_FALL_SPEED = 1;
+  int ix = (int)vx;
+  int iy = (int)vy;
+  int iz = (int)vz;
+  int spot_below = world[ix][(int)(iy - 1)][iz];
+  int spot = world[ix][iy][iz];
+  int spot_above = world[ix][iy+1][iz];
+  if (flycontrol == 0) {
+    if (spot_below == EMPTY || spot_below == WHITE) {
+      pyspeed -= 0.18;
+      if (pyspeed > MAX_FALL_SPEED) {
+        pyspeed = MAX_FALL_SPEED;
+      }
+    } else if (
+      (spot != EMPTY && spot != WHITE) ||
+      (spot_above != EMPTY && spot_above != WHITE)
+    ) {
+      pyspeed = 0;
+      if (spot_above == EMPTY) {
+        vy += 1;
+      } else {
+        // can't move into a blocked spot; can't move up to an empty one
+        vx = oldvx;
+        vy = oldvy;
+        vz = oldvz;
+      }
+    } else {
+      pyspeed = 0;
+    }
+  }
+
+  if (!(oldvx == vx && oldvy == vy && oldvz == vz)) {
+    setPlayerPosition(identity, vx, vy, vz, mx, my);
+  }
+
+
+  float total_speed = sqrt(pxspeed*pxspeed+pyspeed*pyspeed+pzspeed*pzspeed);
+  float normalized_pxspeed = total_speed == 0 ? 0 : pxspeed/total_speed;
+  float normalized_pyspeed = total_speed == 0 ? 0 : pyspeed/total_speed;
+  float normalized_pzspeed = total_speed == 0 ? 0 : pzspeed/total_speed;
+  float decel_constant = -0.14;
+  if (fabsf(pxspeed) <= fabsf(decel_constant*normalized_pxspeed)) {
+    pxspeed = 0;
+  } else {
+    pxspeed += decel_constant*normalized_pxspeed;
+  }
+
+  if (fabsf(pyspeed) <= fabsf(decel_constant*normalized_pyspeed)) {
+    pyspeed = 0;
+  } else {
+    pyspeed += decel_constant*normalized_pyspeed;
+  }
+
+  if (fabsf(pzspeed) <= fabsf(decel_constant*normalized_pzspeed)) {
+    pzspeed = 0;
+  } else {
+    pzspeed += decel_constant*normalized_pzspeed;
+  }
 
   while (mx >= 360) { mx -= 360; }
 
@@ -169,22 +239,6 @@ void update()
     printf("dug: rx, ry, rz: %d, %d, %d\n", flattened_rx, flattened_ry, flattened_rz);
 
     dig = 0;
-  }
-
-  if (flycontrol == 0) {
-    getViewPosition(&vx, &vy, &vz);
-    vx *= -1;
-    vy *= -1;
-    vz *= -1;
-
-    if (world[(int)vx][(int)(vy - 1.6)][(int)vz] == 0) {
-      vy -= 0.35;
-      vx *= -1;
-      vy *= -1;
-      vz *= -1;
-      setViewPosition(vx, vy, vz);
-      setPlayerPosition(identity, vx, vy, vz, mx, my);
-    }
   }
 
   buildDisplayList();
@@ -266,7 +320,7 @@ int main(int argc, char* argv[])
     server_socket = server_setup();
   }
 
-  createPlayer(identity, -50, -80, -50, 0, 0);
+  createPlayer(identity, 50, 70, 50, 0, 0);
   // if you're visible to yourself you'll block your camera
   hidePlayer(identity);
 
