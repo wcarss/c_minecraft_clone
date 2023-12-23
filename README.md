@@ -33,7 +33,6 @@ So I've recently (December 2023ish) picked this back up with a bit of a resoluti
 - refactor out most of the global state into passed context objects
 - possibly port to C++ for the sake of adding classes
 - try to make it run on other systems than my mac
- more sophisticated movement physics to reduce choppy motion feeling
 - "placing cubes"
 - further fill out network protocol
 - possibly an inventory / menu
@@ -45,6 +44,7 @@ So I've recently (December 2023ish) picked this back up with a bit of a resoluti
 ### v0.05 - 2023-12-23
 - better network error handling (like server quits)
 - now handles clients other than the most recent client quitting/rejoining (right now if client 1 exits and rejoins while client 2+ exist, client 1 will be assigned client 2's id)
+- more sophisticated movement physics to reduce choppy motion feeling
 
 ### v0.04 - 2023-12-18
 
