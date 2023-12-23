@@ -106,16 +106,21 @@ void createPlayer(int number, float x, float y, float z, float rotx, float roty)
 /* move player to a new position xyz with rotation rotx,roty,rotz */
 void setPlayerPosition(int number, float x, float y, float z, float rotx, float roty)
 {
-  player_flag[number] = 1;
-
   if (number >= PLAYER_COUNT) {
     printf("ERROR: player number greater than %d\n", PLAYER_COUNT);
     exit(1);
   }
 
-  oldvpx = playerPosition[number][0];
-  oldvpy = playerPosition[number][1];
-  oldvpz = playerPosition[number][2];
+  if (number == identity) {
+    player_flag[number] = 1;
+    vpx = x;
+    vpy = y;
+    vpz = z;
+    oldvpx = playerPosition[number][0];
+    oldvpy = playerPosition[number][1];
+    oldvpz = playerPosition[number][2];
+  }
+
   playerPosition[number][0] = x;
   playerPosition[number][1] = y;
   playerPosition[number][2] = z;

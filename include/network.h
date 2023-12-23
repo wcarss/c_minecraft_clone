@@ -12,11 +12,14 @@
 
 #define MESSAGE_LENGTH 128
 #define RESPONSE_LENGTH 128
-#define MAX_CLIENTS 100
+#define MAX_CLIENTS 11
 #define SERVER 0
 #define PORT 54321
+#define UNUSED_FD -1
+#define UNSET_NEXT_CLIENT_FD -1
 
-extern int fdlist[11];
+extern int fdlist[MAX_CLIENTS];
+extern int minfd;
 extern int maxfd;
 extern int num_clients;
 extern int server_socket;
@@ -26,7 +29,7 @@ extern fd_set readers;
 extern int netClient;
 extern int netServer;
 
-int send_game_over_network(int sockfd);
+int send_game_over_network(int sockfd, int sockfd_index);
 int load_game_over_network(int sockfd);
 
 int server_setup();

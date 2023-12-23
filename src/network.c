@@ -4,11 +4,12 @@
 #include "visibility.h"
 #include "stack.h"
 
-int fdlist[11];
+int fdlist[MAX_CLIENTS];
 int netClient;
 int netServer;
 int num_clients;
 int maxfd;
+int minfd;
 int identity;
 int server_socket;
 fd_set master;
@@ -36,13 +37,14 @@ int sendall(int s, char *buf, int len)
   return n == -1 ? -1 : 0; // return -1 on failure, 0 on success
 }
 
-int get_all(int s, char *buf, int len)
+int get_all(int s, char *buf, int *len)
 {
   int total = 0;        // how many bytes we've got
-  int bytesleft = len; // how many we have left to get
+  int initial_len = *len; // how many bytes we were told we had to get
+  int bytesleft = initial_len; // how many we still have left to get
   int n;
 
-  while (total < len) {
+  while (total < initial_len) {
     n = recv(s, buf + total, bytesleft, 0);
 
     if (n == -1) { break; }
@@ -51,7 +53,7 @@ int get_all(int s, char *buf, int len)
     bytesleft -= n;
   }
 
-  len = total; // return number actually sent here
+  *len = total; // return number actually got here
 
   return n == -1 ? -1 : 0; // return -1 on failure, 0 on success
 }
@@ -68,15 +70,21 @@ int server_setup()
   server_address.sin_port = htons(PORT);
   len = sizeof(server_address);
 
+  for (int i = 0; i < MAX_CLIENTS; i++) {
+    fdlist[i] = UNUSED_FD;
+  }
+
   result = bind(server_sockfd, (struct sockaddr *)&server_address, len);
 
   if (result < 0) {
     perror("bind failed: ");
   }
 
+  // backlog of 5 ought to be enough for my own use
   listen(server_sockfd, 5);
 
   maxfd = server_sockfd;
+  minfd = maxfd;
   FD_ZERO(&master);
   FD_ZERO(&readers);
   FD_SET(server_sockfd, &master);
@@ -96,6 +104,10 @@ int client_setup()
   address.sin_port = htons(PORT);
   len = sizeof(address);
 
+  for (int i = 0; i < MAX_CLIENTS; i++) {
+    fdlist[i] = UNUSED_FD;
+  }
+
   result = connect(sockfd, (struct sockaddr *)&address, len);
 
   if (result < 0) {
@@ -103,6 +115,7 @@ int client_setup()
   }
 
   maxfd = sockfd;
+  minfd = maxfd;
   FD_ZERO(&master);
   FD_ZERO(&readers);
   FD_SET(sockfd, &master);
@@ -126,7 +139,21 @@ int get_stuff_from_server()
 
     if (FD_ISSET(server_socket, &readers)) {
       memset(message, 0, MESSAGE_LENGTH);
-      read(server_socket, message, MESSAGE_LENGTH);
+
+      int get_length = MESSAGE_LENGTH;
+      if (get_all(server_socket, message, &get_length) < 0) {
+        perror("read failed: ");
+      }
+
+      // server went away; close server connection
+      if (get_length == 0) {
+        FD_CLR(server_socket, &master);
+        int close_result;
+        close_result = close(server_socket);
+        printf("closing! status: %d\n", close_result);
+        exit(1);
+      }
+
       process_server_message(message, result);
     } else {
       strcpy(result, "done");
@@ -159,8 +186,10 @@ int process_server_message(char *message, char *result)
   if (strcmp(buf, "player") == 0) {
     sscanf(message, "player %d %f %f %f %f %f", &id, &px, &py, &pz, &degx, &degy);
     if (playerVisible[id]) {
+      printf("received player %d %f %f %f %f %f\n", id, px, py, pz, degx, degy);
       setPlayerPosition(id, px, py, pz, degx, degy);
     } else if (id != identity) {
+      printf("creating player %d %f %f %f %f %f\n", id, px, py, pz, degx, degy);
       // you're invisible; don't go creating yourself over and over because of it
       createPlayer(id, px, py, pz, degx, degy);
     }
@@ -210,8 +239,18 @@ int load_game_over_network(int sockfd)
     if (FD_ISSET(sockfd, &readers)) {
       memset(buf, 0, MESSAGE_LENGTH);
 
-      if (get_all(sockfd, message, MESSAGE_LENGTH) < 0) {
+      int get_length = MESSAGE_LENGTH;
+      if (get_all(sockfd, message, &get_length) < 0) {
         perror("read failed: ");
+      }
+
+      // server went away; close server connection
+      if (get_length == 0) {
+        FD_CLR(sockfd, &master);
+        int close_result;
+        close_result = close(sockfd);
+        printf("closing! status: %d\n", close_result);
+        exit(1);
       }
 
       sscanf(message, "%s", buf);
@@ -233,6 +272,7 @@ int load_game_over_network(int sockfd)
         }
 
         // printf("%d,%d,%d=%d",x,y,z,t);
+        // 4 -1's terminates the block buffer
         if (x == -1) {
           return 0;
         }
@@ -248,33 +288,32 @@ int load_game_over_network(int sockfd)
   return 1;
 }
 
-int send_game_over_network(int sockfd)
+int send_game_over_network(int sockfd, int player_id)
 {
   int i, j, k;
   float px, py, pz;
   float rx, ry, rz;
   char buf[MESSAGE_LENGTH];
   memset(buf, 0, MESSAGE_LENGTH);
-  // num_clients = 0 initially, and this is currently used as an
-  // identity for clients joining, so we'll make it non-zero to
-  // start. Maybe that'll be a problem!
-  sprintf(buf, "world %d", num_clients + 1);
+  // write player id for them to take as their identity; should be non-zero because the server is 0
+  sprintf(buf, "world %d", player_id);
   printf("wrote \"%s\"\n", buf);
   sendall(sockfd, buf, MESSAGE_LENGTH);
 
-  for (i = 0; i <= num_clients; i++) {
-    memset(buf, 0, MESSAGE_LENGTH);
+  for (i = 0; i < PLAYER_COUNT; i++) {
+    if (playerVisible[i] || i == 0) { // i == 0 here to ensure server sends its position, despite not being locally visible
+      memset(buf, 0, MESSAGE_LENGTH);
+      if (i == 0) {
+        getViewPosition(&px, &py, &pz);
+        getViewOrientation(&rx, &ry, &rz);
+        sprintf(buf, "player %d %f %f %f %f %f", 0, px, py, pz, ry, rx);
+      } else {
+        sprintf(buf, "player %d %f %f %f %f %f", i, playerPosition[i][0], playerPosition[i][1], playerPosition[i][2], playerPosition[i][3], playerPosition[i][4]);
+      }
 
-    if (i == 0) {
-      getViewPosition(&px, &py, &pz);
-      getViewOrientation(&rx, &ry, &rz);
-      sprintf(buf, "player %d %f %f %f %f %f", 0, px, py, pz, ry, rx);
-    } else {
-      sprintf(buf, "player %d %f %f %f %f %f", i, playerPosition[i][0], playerPosition[i][1], playerPosition[i][2], playerPosition[i][3], playerPosition[i][4]);
+      printf("wrote \"%s\"\n", buf);
+      sendall(sockfd, buf, MESSAGE_LENGTH);
     }
-
-    printf("wrote \"%s\"\n", buf);
-    sendall(sockfd, buf, MESSAGE_LENGTH);
   }
 
   for (i = 0; i < MOB_COUNT; i++) {
@@ -315,7 +354,9 @@ int send_game_over_network(int sockfd)
 
 int get_stuff_from_client()
 {
-  int client_len, i, j, activity;
+  int get_result, i, j, activity;
+  int client_len;
+  int next_client_fd = UNSET_NEXT_CLIENT_FD;
   struct sockaddr_in client_address;
   struct timeval tv;
   char result[MESSAGE_LENGTH], message[MESSAGE_LENGTH];
@@ -337,51 +378,95 @@ int get_stuff_from_client()
       // printf("and I'm trying\n");
       activity = 1;
       client_len = sizeof(client_address);
-      fdlist[num_clients] = accept(server_socket, (struct sockaddr *)&client_address, (socklen_t *)&client_len);
-      FD_SET(fdlist[num_clients], &master);
+      for (j = 0; j < MAX_CLIENTS; j++) {
+        if (fdlist[j] == UNUSED_FD) {
+          next_client_fd = j;
+          break;
+        }
+      }
+      if (next_client_fd == UNSET_NEXT_CLIENT_FD) {
+        perror("too many clients!");
+        // no open slots; just gonna ignore the connection for now
+        continue;
+      }
+      fdlist[next_client_fd] = accept(server_socket, (struct sockaddr *)&client_address, (socklen_t *)&client_len);
+      FD_SET(fdlist[next_client_fd], &master);
 
-      if (fdlist[num_clients] > maxfd) {
-        maxfd = fdlist[num_clients];
+      if (fdlist[next_client_fd] > maxfd) {
+        maxfd = fdlist[next_client_fd];
       }
 
-      send_game_over_network(fdlist[num_clients]);
+      printf("new player! maxfd: %d, next_client_fd: %d, num_clients: %d, bumping to %d, creating player %d", maxfd, next_client_fd, num_clients, num_clients+1, next_client_fd+1);
+      int new_player_id = next_client_fd + 1;
+      send_game_over_network(fdlist[next_client_fd], new_player_id);
       num_clients++;
-      createPlayer(num_clients, -50, -80, -50, 0, 0);
-      player_flag[num_clients] = 1;
+      showPlayer(new_player_id);
     }
 
     //  printf("oh I left\n");
-    for (i = 0; i < num_clients; i++) {
-      if (FD_ISSET(fdlist[i], &readers)) {
+    for (i = 0; i < MAX_CLIENTS; i++) {
+      if (fdlist[i] != UNUSED_FD && FD_ISSET(fdlist[i], &readers)) {
         activity = 1;
 
-        //printf("in FD_ISSET\n");
-        // <0 indicates error
-        if ((client_len = get_all(fdlist[i], message, MESSAGE_LENGTH)) < 0) {
-          // closing connections is probably overall broken
-          //printf("in <0 branch; message: %s\n", message);
-          if (client_len < 0) {
-            perror("failure during read: ");
-          // this used to be an else-block:
-          // } else {
-            printf("closing connection\n");
+        int get_length = MESSAGE_LENGTH;
+        if ((get_result = get_all(fdlist[i], message, &get_length)) == 0) {
+          if (get_length == 0) {
+
+            printf("closing connection %d, setting fdlist[%d]=fdlist[%d], hiding player %d\n", i, i, num_clients - 1, num_clients);
             FD_CLR(fdlist[i], &master);
             close(fdlist[i]);
-            fdlist[i] = fdlist[num_clients - 1];
-            hidePlayer(num_clients);
-            num_clients--;
-            // maxfd = 0;
+            fdlist[i] = UNUSED_FD;
 
-            // this code for reusing ids likely needs some more thought
-            // for (j = 0; j < num_clients; j++) {
-            //  if (fdlist[j] > maxfd) {
-            //    maxfd = fdlist[j];
-            //  }
-            // }
+            int player_id = i + 1;
+            hidePlayer(player_id);
+            setPlayerPosition(player_id, 0, 0, 0, 0, 0);
+            player_flag[player_id] = 1;
+            num_clients--;
+
+            // reset maxfd
+            maxfd = minfd;
+            for (j = 0; j < MAX_CLIENTS; j++) {
+              // the UNUSED_FD guard is not strictly needed, but is a kind of "imaginary guard"
+              // representing that the unused values are never going to be valid maxfds
+              if (fdlist[j] != UNUSED_FD && fdlist[j] > maxfd) {
+                maxfd = fdlist[j];
+              }
+            }
+
+            printf("at end of close, maxfd is %d, num_clients is %d\n", maxfd, num_clients);
+
+          } else {
+            printf("processing message from client: '%s'\n", message);
+            process_client_message(message);
           }
         } else {
-          //printf("processing message from client: '%s'", message);
-          process_client_message(message);
+          if (get_result < 0) {
+            perror("failure during read: ");
+          } // implicit else: get_length was likely 0, meaning the client cleanly closed the connection
+          printf("closing connection %d, setting fdlist[%d]=fdlist[%d], hiding player %d\n", i, i, num_clients - 1, num_clients);
+          FD_CLR(fdlist[i], &master);
+          int close_result;
+          close_result = close(fdlist[i]);
+          printf("closing! status: %d\n", close_result);
+          fdlist[i] = UNUSED_FD;
+
+          int player_id = i + 1;
+          hidePlayer(player_id);
+          setPlayerPosition(player_id, 0, 0, 0, 0, 0);
+          player_flag[player_id] = 1;
+          num_clients--;
+
+          // reset maxfd
+          maxfd = minfd;
+          for (j = 0; j < MAX_CLIENTS; j++) {
+            // the UNUSED_FD guard is not strictly needed, but is a kind of "imaginary guard"
+            // representing that the unused values are never going to be a valid maxfd
+            if (fdlist[j] != UNUSED_FD && fdlist[j] > maxfd) {
+              maxfd = fdlist[j];
+            }
+          }
+
+          printf("at end of close, maxfd is %d, num_clients is %d\n", maxfd, num_clients);
         }
       }
     }
@@ -413,6 +498,7 @@ int process_client_message(char *message)
 
   if (strcmp(buf, "player") == 0) {
     sscanf(message, "player %d %f %f %f %f %f", &id, &px, &py, &pz, &degx, &degy);
+    printf("received player %d %f %f %f %f %f\n", id, px, py, pz, degx, degy);
     setPlayerPosition(id, px, py, pz, degx, degy);
     player_flag[id] = 1;
     return 0;
@@ -451,8 +537,10 @@ int send_stuff_to_clients()
       if (i == 0) {
         getViewPosition(&px, &py, &pz);
         getViewOrientation(&rx, &ry, &rz);
+        printf("sending player %d %f %f %f %f %f\n", 0, px, py, pz, ry, rx);
         sprintf(buf, "player %d %f %f %f %f %f", 0, px, py, pz, ry, rx);
       } else {
+        printf("relaying player %d %f %f %f %f %f\n", i, playerPosition[i][0], playerPosition[i][1], playerPosition[i][2], playerPosition[i][3], playerPosition[i][4]);
         sprintf(buf, "player %d %f %f %f %f %f", i, playerPosition[i][0], playerPosition[i][1], playerPosition[i][2], playerPosition[i][3], playerPosition[i][4]);
       }
 
@@ -495,13 +583,17 @@ int send_stuff_to_clients()
   }
 
   while (pop(s, buf) == 0) {
-    for (i = 0; i < num_clients; i++) {
-      sendall(fdlist[i], buf, MESSAGE_LENGTH);
+    for (i = 0; i < MAX_CLIENTS; i++) {
+      if (fdlist[i] != UNUSED_FD) {
+        sendall(fdlist[i], buf, MESSAGE_LENGTH);
+      }
     }
   }
 
-  for (i = 0; i < num_clients; i++) {
-    sendall(fdlist[i], "done", MESSAGE_LENGTH);
+  for (i = 0; i < MAX_CLIENTS; i++) {
+    if (fdlist[i] != UNUSED_FD) {
+      sendall(fdlist[i], "done", MESSAGE_LENGTH);
+    }
   }
 
   kill_stack(&s);
@@ -519,6 +611,7 @@ int send_stuff_to_server()
     getViewPosition(&px, &py, &pz);
     getViewOrientation(&rx, &ry, &rz);
     memset(buf, 0, MESSAGE_LENGTH);
+    printf("sending player %d %f %f %f %f %f\n", identity, px, py, pz, ry, rx);
     sprintf(buf, "player %d %f %f %f %f %f", identity, px, py, pz, ry, rx);
     sendall(server_socket, buf, MESSAGE_LENGTH);
   }

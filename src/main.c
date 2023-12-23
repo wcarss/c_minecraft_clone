@@ -239,6 +239,9 @@ void parseArgs(int argc, char *argv[])
 
 int main(int argc, char* argv[])
 {
+  //ignore sigpipes for now
+  signal(SIGPIPE, SIG_IGN);
+
   glutInit(&argc, argv);
   parseArgs(argc, argv);
 
