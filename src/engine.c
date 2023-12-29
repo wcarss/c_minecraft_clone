@@ -48,13 +48,7 @@ int randomSeed = 0; // random seed will be set to time(NULL) if not passed in
 int displayList[MAX_DISPLAY_LIST][3];
 int displayCount = 0; // count of cubes in displayList[][]
 
-/* list of mobs - number of mobs, xyz values and rotation about y */
-float mobPosition[MOB_COUNT][5];
-float mobSpeed[MOB_COUNT][3];
-/* visibility of mobs, 0 not drawn, 1 drawn */
-short mobVisible[MOB_COUNT];
-int mobflag[MOB_COUNT];
-
+Mob mobs[MOB_COUNT];
 Player players[PLAYER_COUNT];
 int sun_flag = 0;
 int clouds_flag = 0;
@@ -68,9 +62,7 @@ int digflag[4];
 /* set all player location, rotation, and visibility values to zero */
 void initPlayerArray()
 {
-  int i;
-
-  for (i = 0; i < PLAYER_COUNT; i++) {
+  for (int i = 0; i < PLAYER_COUNT; i++) {
     players[i].pos.x = 0;
     players[i].pos.y = 0;
     players[i].pos.z = 0;
@@ -149,15 +141,15 @@ void showPlayer(int number)
 /* set all mob location, rotation, and visibility values to zero */
 void initMobArray()
 {
-  int i;
-
-  for (i = 0; i < MOB_COUNT; i++) {
-    mobPosition[i][0] = 0.0;
-    mobPosition[i][1] = 0.0;
-    mobPosition[i][2] = 0.0;
-    mobPosition[i][3] = 0.0;
-    mobPosition[i][4] = 0.0;
-    mobVisible[i] = 0;
+  for (int i = 0; i < MOB_COUNT; i++) {
+    mobs[i].pos.x = 0;
+    mobs[i].pos.y = 0;
+    mobs[i].pos.z = 0;
+    mobs[i].rot.x = 0;
+    mobs[i].rot.y = 0;
+    mobs[i].rot.z = 0;
+    mobs[i].visible = false;
+    mobs[i].flag = false;
   }
 }
 
@@ -170,12 +162,12 @@ void createMob(int number, float x, float y, float z, float rotx, float roty)
     exit(1);
   }
 
-  mobPosition[number][0] = x;
-  mobPosition[number][1] = y;
-  mobPosition[number][2] = z;
-  mobPosition[number][3] = rotx;
-  mobPosition[number][4] = roty;
-  mobVisible[number] = 1;
+  mobs[number].pos.x = x;
+  mobs[number].pos.y = y;
+  mobs[number].pos.z = z;
+  mobs[number].rot.x = rotx;
+  mobs[number].rot.y = roty;
+  mobs[number].visible = true;
 }
 
 /* move mob to a new position xyz with rotation rotx,roty,rotz */
@@ -186,13 +178,12 @@ void setMobPosition(int number, float x, float y, float z, float rotx, float rot
     exit(1);
   }
 
-  mobPosition[number][0] = x;
-  mobPosition[number][1] = y;
-  mobPosition[number][2] = z;
-  mobPosition[number][3] = rotx;
-  mobPosition[number][4] = roty;
-
-  mobflag[number] = 1;
+  mobs[number].pos.x = x;
+  mobs[number].pos.y = y;
+  mobs[number].pos.z = z;
+  mobs[number].rot.x = rotx;
+  mobs[number].rot.y = roty;
+  mobs[number].flag = true;
 }
 
 /* turn off drawing for mob number */
@@ -203,7 +194,7 @@ void hideMob(int number)
     exit(1);
   }
 
-  mobVisible[number] = 0;
+  mobs[number].visible = false;
 }
 
 /* turn on drawing for mob number */
@@ -214,7 +205,7 @@ void showMob(int number)
     exit(1);
   }
 
-  mobVisible[number] = 1;
+  mobs[number].visible = true;
 }
 
 /* allows user to set position of the light */
@@ -485,21 +476,21 @@ void display(void)
 
   /* draw mobs in the world */
   for (i = 0; i < MOB_COUNT; i++) {
-    if (mobVisible[i] == 1) {
-      //printf("rendering mob %d at %f,%f,%f\n", i, mobPosition[i][0],mobPosition[i][1],mobPosition[i][2]);
+    if (mobs[i].visible) {
+      //printf("rendering mob %d at %f,%f,%f\n", i, mobs[i].pos.x, mobs[i].pos.y, mobs[i].pos.z);
       glPushMatrix();
       /* black body */
       glTranslatef(
-        mobPosition[i][0],
-        mobPosition[i][1] + 0.5,
-        mobPosition[i][2]
+        mobs[i].pos.x,
+        mobs[i].pos.y + 0.5,
+        mobs[i].pos.z
       );
       glMaterialfv(GL_FRONT, GL_AMBIENT, black);
       glMaterialfv(GL_FRONT, GL_DIFFUSE, gray);
       glutSolidSphere(0.5, 8, 8);
       /* white eyes */
-      glRotatef(mobPosition[i][3], 0.0, 1.0, 0.0);
-      glRotatef(mobPosition[i][4], 1.0, 0.0, 0.0);
+      glRotatef(mobs[i].rot.x, 0.0, 1.0, 0.0);
+      glRotatef(mobs[i].rot.y, 1.0, 0.0, 0.0);
       glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, white);
       glTranslatef(0.3, 0.1, 0.3);
       glutSolidSphere(0.1, 4, 4);

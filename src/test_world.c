@@ -95,77 +95,42 @@ void mob_action()
       // do nothing 10/64 of the time
     } else if (outcome < rand_max - 4) {
       // move 50/64 of the time
-      old_x = mobPosition[i][0];
-      old_z = mobPosition[i][2];
-      mobPosition[i][0] += mobSpeed[i][0];
-      mobPosition[i][1] += mobSpeed[i][1];
-      mobPosition[i][2] += mobSpeed[i][2];
-      if (mobPosition[i][0] < 0 || mobPosition[i][0] >= WORLDX - 1 || world[(int)floor(mobPosition[i][0])][(int)floor(mobPosition[i][1])][(int)floor(mobPosition[i][2])] != EMPTY) {
-        mobPosition[i][0] = old_x;
+      old_x = mobs[i].pos.x;
+      old_z = mobs[i].pos.z;
+      mobs[i].pos.x += mobs[i].speed.x;
+      mobs[i].pos.y += mobs[i].speed.y;
+      mobs[i].pos.z += mobs[i].speed.z;
+      if (
+        mobs[i].pos.x < 0 || mobs[i].pos.x >= WORLDX - 1 || 
+        mobs[i].pos.z < 0 || mobs[i].pos.z >= WORLDZ - 1 ||
+        world[(int)floor(mobs[i].pos.x)][(int)floor(mobs[i].pos.y)][(int)floor(mobs[i].pos.z)] != EMPTY
+      ) {
+        mobs[i].pos.x = old_x;
+        mobs[i].pos.z = old_z;
       }
-      if (mobPosition[i][2] < 0 || mobPosition[i][2] >= WORLDZ - 1 || world[(int)floor(mobPosition[i][0])][(int)floor(mobPosition[i][1])][(int)floor(mobPosition[i][2])] != EMPTY) {
-        mobPosition[i][2] = old_z;
-      }
-      setMobPosition(i, mobPosition[i][0], mobPosition[i][1], mobPosition[i][2], mobPosition[i][3], mobPosition[i][4]);
+      setMobPosition(i, mobs[i].pos.x, mobs[i].pos.y, mobs[i].pos.z, mobs[i].rot.x, mobs[i].rot.y);
     } else {
       // recalc direction 4/64 of the time
       if (outcome == rand_max-4) {
-        mobSpeed[i][0] = -mob_speed;
-        mobSpeed[i][2] = 0;
-        mobPosition[i][3] = 270;
+        mobs[i].speed.x = -mob_speed;
+        mobs[i].speed.z = 0;
+        mobs[i].rot.x = 270;
       } else if (outcome == rand_max-3) {
-        mobSpeed[i][0] = mob_speed;
-        mobSpeed[i][2] = 0;
-        mobPosition[i][3] = 90;
+        mobs[i].speed.x = mob_speed;
+        mobs[i].speed.z = 0;
+        mobs[i].rot.x = 90;
       } else if (outcome == rand_max-2) {
-        mobSpeed[i][0] = 0;
-        mobSpeed[i][2] = -mob_speed;
-        mobPosition[i][3] = 180;
+        mobs[i].speed.x = 0;
+        mobs[i].speed.z = -mob_speed;
+        mobs[i].rot.x = 180;
       } else { // rand_max - 1
-        mobSpeed[i][0] = 0;
-        mobSpeed[i][2] = mob_speed;
-        mobPosition[i][3] = 0;
+        mobs[i].speed.x = 0;
+        mobs[i].speed.z = mob_speed;
+        mobs[i].rot.x = 0;
       }
     }
   }
 }
-
-void old_mob_action()
-{
-  int outcome;
-  for (int i = 0; i < 4; i++) {
-    outcome = rand() % 12; // 012 345 678 9,10,11
-
-    if (outcome < 3) { // 012
-      mobPosition[i][0] += 0.1;
-      mobPosition[i][4] = 0;
-      if (mobPosition[i][0] >= WORLDX - 1 || world[(int)floor(mobPosition[i][0])][(int)floor(mobPosition[i][1])][(int)floor(mobPosition[i][2])] != EMPTY) {
-        mobPosition[i][0] -= 1;
-      }
-    } else if (outcome < 6) { // 345
-      mobPosition[i][0] -= 0.1;
-      mobPosition[i][4] = 180;
-      if (mobPosition[i][0] < 0 || world[(int)floor(mobPosition[i][0])][(int)floor(mobPosition[i][1])][(int)floor(mobPosition[i][2])] != EMPTY) {
-        mobPosition[i][0] += 1;
-      }
-    } else if (outcome < 9) { // 678
-      mobPosition[i][2] += 0.1;
-      mobPosition[i][4] = 90;
-      if (mobPosition[i][2] >= WORLDZ - 1 || world[(int)floor(mobPosition[i][0])][(int)floor(mobPosition[i][1])][(int)floor(mobPosition[i][2])] != EMPTY) {
-        mobPosition[i][2] -= 1;
-      }
-    } else { // 9 10 11
-      mobPosition[i][2] -= 0.1;
-      mobPosition[i][4] = 270;
-      if (mobPosition[i][2] < 0 || world[(int)floor(mobPosition[i][0])][(int)floor(mobPosition[i][1])][(int)floor(mobPosition[i][2])] != EMPTY) {
-        mobPosition[i][2] += 1;
-      }
-    }
-
-    setMobPosition(i, mobPosition[i][0], mobPosition[i][1], mobPosition[i][2], mobPosition[i][3], mobPosition[i][4]);
-  }
-}
-
 
 void build_test_world()
 {

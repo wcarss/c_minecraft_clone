@@ -318,9 +318,9 @@ int send_game_over_network(int sockfd, int player_id)
 
   for (i = 0; i < MOB_COUNT; i++) {
     printf("mob %d\n", i);
-    if (mobflag[i]) {
+    if (mobs[i].flag) {
       memset(buf, 0, MESSAGE_LENGTH);
-      sprintf(buf, "mob %d %f %f %f %f %f", i, mobPosition[i][0], mobPosition[i][1], mobPosition[i][2], mobPosition[i][3], mobPosition[i][4]);
+      sprintf(buf, "mob %d %f %f %f %f %f", i, mobs[i].pos.x, mobs[i].pos.y, mobs[i].pos.z, mobs[i].rot.x, mobs[i].rot.y);
       printf("wrote \"%s\"\n", buf);
       sendall(sockfd, buf, MESSAGE_LENGTH);
     }
@@ -569,9 +569,9 @@ int send_stuff_to_clients()
   }
 
   for (i = 0; i < MOB_COUNT; i++) {
-    if (mobflag[i]) {
-      mobflag[i] = 0;
-      sprintf(buf, "mob %d %f %f %f %f %f", i, mobPosition[i][0], mobPosition[i][1], mobPosition[i][2], mobPosition[i][3], mobPosition[i][4]);
+    if (mobs[i].flag) {
+      mobs[i].flag = false;
+      sprintf(buf, "mob %d %f %f %f %f %f", i, mobs[i].pos.x, mobs[i].pos.y, mobs[i].pos.z, mobs[i].rot.x, mobs[i].rot.y);
       push(s, buf);
     }
   }

@@ -83,6 +83,15 @@ typedef struct {
   bool flag;
 } Player;
 
+typedef struct {
+  Vec3f pos;
+  Vec3f oldpos;
+  Vec3f rot;
+  Vec3f speed;
+  bool visible;
+  bool flag;
+} Mob;
+
 extern int keyStates[256];
 /* flag which is set to 1 when flying behaviour is desired */
 extern int flycontrol;
@@ -91,13 +100,14 @@ extern int testWorld;
 /* list and count of polygons to be displayed, set during culling */
 int displayList[MAX_DISPLAY_LIST][3];
 int displayCount;
-/* flag to print out frames per second */
-extern float mobPosition[MOB_COUNT][5];
-extern float mobSpeed[MOB_COUNT][3];
+
 extern Player players[PLAYER_COUNT];
+extern Mob mobs[MOB_COUNT];
+
 extern int clouds_flag;
 extern int sun_flag;
 extern int highlight[3];
+/* flag to print out frames per second */
 extern int showFPS;
 extern int fullscreen;
 extern int randomSeedGiven;
@@ -107,5 +117,4 @@ extern int randomSeed;
 extern int displayAllCubes;
 extern int dig;
 extern int digflag[4];
-extern int mobflag[MOB_COUNT];
 #endif
