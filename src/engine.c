@@ -32,9 +32,6 @@ GLfloat lightPosition[] = {0.0, 99.0, 0.0, 0.0};
 /* location for light source that is kept at viewpoint location */
 GLfloat viewpointLight[] = { -50.0, -50.0, -50.0, 1.0};
 
-// highlight storage for mouselook showing what cube to interact with
-int highlight[3];
-
 /* command line flags */
 int flycontrol = 0;  // allow viewpoint to move in y axis when 1
 int displayAllCubes = 0;  // draw all of the cubes in the world when 1
@@ -389,7 +386,7 @@ void drawCube(int i, int j, int k)
   glTranslatef(i + 0.5, j + 0.5, k + 0.5);
   glutSolidCube(1.0);
 
-  if (highlight[0] == i && highlight[1] == j && highlight[2] == k) {
+  if (players[identity].highlight.x == i && players[identity].highlight.y == j && players[identity].highlight.z == k) {
     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, coal);
     glLineWidth(2.0);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

@@ -75,11 +75,23 @@ typedef struct {
 } Vec3f;
 
 typedef struct {
+  int x;
+  int y;
+  int z;
+} Vec3i;
+
+typedef struct {
   Vec3f pos;
   Vec3f oldpos;
   Vec3f rot;
   Vec3f speed;
+
+  // highlight storage for mouselook showing what cube to interact with
+  Vec3i highlight;
+
   bool visible;
+
+  // whether the player's state has been updated and needs to be sent out
   bool flag;
 } Player;
 
@@ -89,6 +101,8 @@ typedef struct {
   Vec3f rot;
   Vec3f speed;
   bool visible;
+
+  // whether the mob's state has been updated and needs to be sent out
   bool flag;
 } Mob;
 
@@ -106,7 +120,6 @@ extern Mob mobs[MOB_COUNT];
 
 extern int clouds_flag;
 extern int sun_flag;
-extern int highlight[3];
 /* flag to print out frames per second */
 extern int showFPS;
 extern int fullscreen;

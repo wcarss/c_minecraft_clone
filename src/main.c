@@ -222,16 +222,16 @@ void update()
     flattened_rz = (int)floor(rz);
 
     if (world[flattened_rx][flattened_ry][flattened_rz]) {
-      highlight[0] = flattened_rx;
-      highlight[1] = flattened_ry;
-      highlight[2] = flattened_rz;
+      players[identity].highlight.x = flattened_rx;
+      players[identity].highlight.y = flattened_ry;
+      players[identity].highlight.z = flattened_rz;
       break;
     }
   }
 
   if (dig == 1) {
     digflag[0] = 1;
-    world[highlight[0]][highlight[1]][highlight[2]] = EMPTY;
+    world[players[identity].highlight.x][players[identity].highlight.y][players[identity].highlight.z] = EMPTY;
     trimout();
     digflag[1] = flattened_rx;
     digflag[2] = flattened_ry;
