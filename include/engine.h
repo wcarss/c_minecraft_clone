@@ -1,6 +1,8 @@
 #ifndef _ENGINE
 #define _ENGINE
 
+#include <stdbool.h>
+
 #ifdef UBUNTU
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -66,6 +68,21 @@ void showMob(int);
 void update();
 void buildDisplayList();
 
+typedef struct {
+  float x;
+  float y;
+  float z;
+} Vec3f;
+
+typedef struct {
+  Vec3f pos;
+  Vec3f oldpos;
+  Vec3f rot;
+  Vec3f speed;
+  bool visible;
+  bool flag;
+} Player;
+
 extern int keyStates[256];
 /* flag which is set to 1 when flying behaviour is desired */
 extern int flycontrol;
@@ -77,12 +94,9 @@ int displayCount;
 /* flag to print out frames per second */
 extern float mobPosition[MOB_COUNT][5];
 extern float mobSpeed[MOB_COUNT][3];
-extern float playerPosition[PLAYER_COUNT][5];
-extern short playerVisible[PLAYER_COUNT];
+extern Player players[PLAYER_COUNT];
 extern int clouds_flag;
 extern int sun_flag;
-extern int player_flag[PLAYER_COUNT];
-extern float pxspeed, pyspeed, pzspeed;
 extern int highlight[3];
 extern int showFPS;
 extern int fullscreen;

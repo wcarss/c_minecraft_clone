@@ -23,10 +23,6 @@ GLuint   textureID[1];
 
 float windowWidth, windowHeight;
 
-/* viewpoint coordinates */
-float pxspeed, pyspeed, pzspeed;
-float oldvpx, oldvpy, oldvpz;
-
 /* mouse direction coordiates */
 float mvx = 0.0, mvy = 0.0, mvz = 0.0;
 
@@ -59,12 +55,8 @@ float mobSpeed[MOB_COUNT][3];
 short mobVisible[MOB_COUNT];
 int mobflag[MOB_COUNT];
 
-/* list of players - xyz values and x/y rotations */
-float playerPosition[PLAYER_COUNT][5];
-/* visibility of players, 0 not drawn, 1 drawn */
-short playerVisible[PLAYER_COUNT];
+Player players[PLAYER_COUNT];
 int sun_flag = 0;
-int player_flag[PLAYER_COUNT] = {0};
 int clouds_flag = 0;
 /* flag indicating the user wants the cube in front of them removed */
 int dig = 0;
@@ -79,12 +71,14 @@ void initPlayerArray()
   int i;
 
   for (i = 0; i < PLAYER_COUNT; i++) {
-    playerPosition[i][0] = 0.0;
-    playerPosition[i][1] = 0.0;
-    playerPosition[i][2] = 0.0;
-    playerPosition[i][3] = 0.0;
-    playerPosition[i][4] = 0.0;
-    playerVisible[i] = 0;
+    players[i].pos.x = 0;
+    players[i].pos.y = 0;
+    players[i].pos.z = 0;
+    players[i].rot.x = 0;
+    players[i].rot.y = 0;
+    players[i].rot.z = 0;
+    players[i].visible = false;
+    players[i].flag = false;
   }
 }
 
@@ -97,12 +91,13 @@ void createPlayer(int number, float x, float y, float z, float rotx, float roty)
     exit(1);
   }
 
-  playerPosition[number][0] = x;
-  playerPosition[number][1] = y;
-  playerPosition[number][2] = z;
-  playerPosition[number][3] = rotx;
-  playerPosition[number][4] = roty;
-  playerVisible[number] = 1;
+  players[number].pos.x = x;
+  players[number].pos.y = y;
+  players[number].pos.z = z;
+  players[number].rot.x = x;
+  players[number].rot.y = y;
+  players[number].rot.z = 0; // z-rotation is unused
+  players[number].visible = true;
 }
 
 /* move player to a new position xyz with rotation rotx,roty,rotz */
@@ -114,19 +109,19 @@ void setPlayerPosition(int number, float x, float y, float z, float rotx, float 
   }
 
   if (number == identity) {
-    printf("p%d(x,y,z): %f,%f,%f\n", number, playerPosition[number][0], playerPosition[number][1], playerPosition[number][2]);
-    player_flag[number] = 1;
+    printf("p%d(x,y,z): %f,%f,%f\n", number, players[number].pos.x, players[number].pos.y, players[number].pos.z);
+    players[number].flag = true;
 
-    oldvpx = playerPosition[number][0];
-    oldvpy = playerPosition[number][1];
-    oldvpz = playerPosition[number][2];
+    players[number].oldpos.x = players[number].pos.x;
+    players[number].oldpos.y = players[number].pos.y;
+    players[number].oldpos.z = players[number].pos.z;
   }
 
-  playerPosition[number][0] = x;
-  playerPosition[number][1] = y;
-  playerPosition[number][2] = z;
-  playerPosition[number][3] = rotx;
-  playerPosition[number][4] = roty;
+  players[number].pos.x = x;
+  players[number].pos.y = y;
+  players[number].pos.z = z;
+  players[number].rot.x = rotx;
+  players[number].rot.y = roty;
 }
 
 /* turn off drawing for player number */
@@ -137,7 +132,7 @@ void hidePlayer(int number)
     exit(1);
   }
 
-  playerVisible[number] = 0;
+  players[number].visible = false;
 }
 
 /* turn on drawing for player number */
@@ -148,7 +143,7 @@ void showPlayer(int number)
     exit(1);
   }
 
-  playerVisible[number] = 1;
+  players[number].visible = true;
 }
 
 /* set all mob location, rotation, and visibility values to zero */
@@ -240,38 +235,38 @@ GLfloat* getLightPosition()
 /* functions store and return the current location of the viewpoint */
 void getViewPosition(float *x, float *y, float *z)
 {
-  *x = playerPosition[identity][0];
-  *y = playerPosition[identity][1];
-  *z = playerPosition[identity][2];
+  *x = players[identity].pos.x;
+  *y = players[identity].pos.y;
+  *z = players[identity].pos.z;
 }
 
 void setViewPosition(float x, float y, float z)
 {
-  playerPosition[identity][0] = x;
-  playerPosition[identity][1] = y;
-  playerPosition[identity][2] = z;
+  players[identity].pos.x = x;
+  players[identity].pos.y = y;
+  players[identity].pos.z = z;
 }
 
 /* returns the previous location of the viewpoint */
 void getOldViewPosition(float *x, float *y, float *z)
 {
-  *x = oldvpx;
-  *y = oldvpy;
-  *z = oldvpz;
+  *x = players[identity].oldpos.x;
+  *y = players[identity].oldpos.y;
+  *z = players[identity].oldpos.z;
 }
 
 void setViewOrientation(float xaxis, float yaxis, float zaxis)
 {
-  playerPosition[identity][3] = xaxis;
-  playerPosition[identity][4] = yaxis;
+  players[identity].rot.x = xaxis;
+  players[identity].rot.y = yaxis;
   // ignore zaxis;
 }
 
 /* returns the current orientation of the viewpoint */
 void getViewOrientation(float *xaxis, float *yaxis, float *zaxis)
 {
-  *xaxis = playerPosition[identity][3];
-  *yaxis = playerPosition[identity][4];
+  *xaxis = players[identity].rot.x;
+  *yaxis = players[identity].rot.y;
   *zaxis = 0; // we don't store this or use it
 }
 
@@ -440,16 +435,16 @@ void display(void)
 
   glEnable(GL_DEPTH_TEST);
 
-  glRotatef(playerPosition[identity][3], 1.0, 0.0, 0.0);
-  glRotatef(playerPosition[identity][4], 0.0, 1.0, 0.0);
+  glRotatef(players[identity].rot.x, 1.0, 0.0, 0.0);
+  glRotatef(players[identity].rot.y, 0.0, 1.0, 0.0);
   /* Subtract 1 to raise viewpoint slightly above objects. */
   /* Gives the impression of a head on top of a body. */
-  glTranslatef(-playerPosition[identity][0], -playerPosition[identity][1] - 1.2, -playerPosition[identity][2]);
+  glTranslatef(-players[identity].pos.x, -players[identity].pos.y - 1.2, -players[identity].pos.z);
 
   /* set viewpoint light position */
-  viewpointLight[0] = playerPosition[identity][0];
-  viewpointLight[1] = playerPosition[identity][1];
-  viewpointLight[2] = playerPosition[identity][2];
+  viewpointLight[0] = players[identity].pos.x;
+  viewpointLight[1] = players[identity].pos.y;
+  viewpointLight[2] = players[identity].pos.z;
   glLightfv(GL_LIGHT1, GL_POSITION, viewpointLight);
 
   /* draw surfaces as either smooth or flat shaded */
@@ -516,21 +511,21 @@ void display(void)
 
   /* draw players in the world */
   for (i = 0; i < PLAYER_COUNT; i++) {
-    if (playerVisible[i] == 1) {
+    if (players[i].visible) {
       glPushMatrix();
       /* white body */
       glTranslatef(
-        playerPosition[i][0],
-        playerPosition[i][1] + 0.5,
-        playerPosition[i][2]
+        players[i].pos.x,
+        players[i].pos.y + 0.5,
+        players[i].pos.z
       );
       glMaterialfv(GL_FRONT, GL_AMBIENT, white);
       glMaterialfv(GL_FRONT, GL_DIFFUSE, gray);
       glutSolidSphere(0.5, 8, 8);
       // mouse left looking left, mouse right looking right
       // mouse up looking up, mouse down looking down
-      glRotatef(playerPosition[i][3], 0.0, -1.0, 0.0);
-      glRotatef(playerPosition[i][4], -1.0, 0.0, 0.0);
+      glRotatef(players[i].rot.x, 0.0, -1.0, 0.0);
+      glRotatef(players[i].rot.y, -1.0, 0.0, 0.0);
       /* red eyes */
       glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, red);
       glTranslatef(0.3, 0.1, -0.3);

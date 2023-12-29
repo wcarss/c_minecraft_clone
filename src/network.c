@@ -185,7 +185,7 @@ int process_server_message(char *message, char *result)
 
   if (strcmp(buf, "player") == 0) {
     sscanf(message, "player %d %f %f %f %f %f", &id, &px, &py, &pz, &degx, &degy);
-    if (playerVisible[id]) {
+    if (players[id].visible) {
       printf("received player %d %f %f %f %f %f\n", id, px, py, pz, degx, degy);
       setPlayerPosition(id, px, py, pz, degx, degy);
     } else if (id != identity) {
@@ -301,14 +301,14 @@ int send_game_over_network(int sockfd, int player_id)
   sendall(sockfd, buf, MESSAGE_LENGTH);
 
   for (i = 0; i < PLAYER_COUNT; i++) {
-    if (playerVisible[i] || i == 0) { // i == 0 here to ensure server sends its position, despite not being locally visible
+    if (players[i].visible || i == 0) { // i == 0 here to ensure server sends its position, despite not being locally visible
       memset(buf, 0, MESSAGE_LENGTH);
       if (i == 0) {
         getViewPosition(&px, &py, &pz);
         getViewOrientation(&rx, &ry, &rz);
         sprintf(buf, "player %d %f %f %f %f %f", 0, px, py, pz, ry, rx);
       } else {
-        sprintf(buf, "player %d %f %f %f %f %f", i, playerPosition[i][0], playerPosition[i][1], playerPosition[i][2], playerPosition[i][3], playerPosition[i][4]);
+        sprintf(buf, "player %d %f %f %f %f %f", i, players[i].pos.x, players[i].pos.y, players[i].pos.z, players[i].rot.x, players[i].rot.y);
       }
 
       printf("wrote \"%s\"\n", buf);
@@ -420,7 +420,7 @@ int get_stuff_from_client()
             int player_id = i + 1;
             hidePlayer(player_id);
             setPlayerPosition(player_id, 0, 0, 0, 0, 0);
-            player_flag[player_id] = 1;
+            players[player_id].flag = true;
             num_clients--;
 
             // reset maxfd
@@ -453,7 +453,7 @@ int get_stuff_from_client()
           int player_id = i + 1;
           hidePlayer(player_id);
           setPlayerPosition(player_id, 0, 0, 0, 0, 0);
-          player_flag[player_id] = 1;
+          players[player_id].flag = true;
           num_clients--;
 
           // reset maxfd
@@ -500,7 +500,7 @@ int process_client_message(char *message)
     sscanf(message, "player %d %f %f %f %f %f", &id, &px, &py, &pz, &degx, &degy);
     printf("received player %d %f %f %f %f %f\n", id, px, py, pz, degx, degy);
     setPlayerPosition(id, px, py, pz, degx, degy);
-    player_flag[id] = 1;
+    players[id].flag = true;
     return 0;
   }
 
@@ -531,8 +531,8 @@ int send_stuff_to_clients()
   new_stack(&s);
 
   for (i = 0; i < PLAYER_COUNT; i++) {
-    if (player_flag[i]) {
-      player_flag[i] = 0;
+    if (players[i].flag) {
+      players[i].flag = false;
 
       if (i == 0) {
         getViewPosition(&px, &py, &pz);
@@ -540,8 +540,8 @@ int send_stuff_to_clients()
         printf("sending player %d %f %f %f %f %f\n", 0, px, py, pz, ry, rx);
         sprintf(buf, "player %d %f %f %f %f %f", 0, px, py, pz, ry, rx);
       } else {
-        printf("relaying player %d %f %f %f %f %f\n", i, playerPosition[i][0], playerPosition[i][1], playerPosition[i][2], playerPosition[i][3], playerPosition[i][4]);
-        sprintf(buf, "player %d %f %f %f %f %f", i, playerPosition[i][0], playerPosition[i][1], playerPosition[i][2], playerPosition[i][3], playerPosition[i][4]);
+        printf("relaying player %d %f %f %f %f %f\n", i, players[i].pos.x, players[i].pos.y, players[i].pos.z, players[i].rot.x, players[i].rot.y);
+        sprintf(buf, "player %d %f %f %f %f %f", i, players[i].pos.x, players[i].pos.y, players[i].pos.z, players[i].rot.x, players[i].rot.y);
       }
 
       push(s, buf);
@@ -606,8 +606,8 @@ int send_stuff_to_server()
   float px, py, pz, rx, ry, rz;
   char buf[MESSAGE_LENGTH];
 
-  if (player_flag[identity]) {
-    player_flag[identity] = 0;
+  if (players[identity].flag) {
+    players[identity].flag = false;
     getViewPosition(&px, &py, &pz);
     getViewOrientation(&rx, &ry, &rz);
     memset(buf, 0, MESSAGE_LENGTH);

@@ -83,51 +83,51 @@ void update()
   const double PLAYER_ACCEL = 0.2;
   float rotx = mx / 180.0 * 3.141592;
   float roty = my / 180.0 * 3.141592;
-  float oldxspeed = pxspeed;
-  float oldzspeed = pzspeed;
+  float oldxspeed = players[identity].speed.x;
+  float oldzspeed = players[identity].speed.z;
 
   if (keyStates['w']) { // forward motion
-    pxspeed += sin(roty) * PLAYER_ACCEL;
-    pzspeed -= cos(roty) * PLAYER_ACCEL;
+    players[identity].speed.x += sin(roty) * PLAYER_ACCEL;
+    players[identity].speed.z -= cos(roty) * PLAYER_ACCEL;
 
     // turn off y motion so you can't usually fly
     if (flycontrol == 1) {
-      pyspeed -= sin(rotx) * PLAYER_ACCEL;
+      players[identity].speed.y -= sin(rotx) * PLAYER_ACCEL;
     }
   } else if (keyStates['s']) {  // backward motion
-    pxspeed -= sin(roty) * PLAYER_ACCEL;
-    pzspeed += cos(roty) * PLAYER_ACCEL;
+    players[identity].speed.x -= sin(roty) * PLAYER_ACCEL;
+    players[identity].speed.z += cos(roty) * PLAYER_ACCEL;
 
     // turn off y motion so you can't usually fly
     if (flycontrol == 1) {
-      pyspeed += sin(rotx) * PLAYER_ACCEL;
+      players[identity].speed.y += sin(rotx) * PLAYER_ACCEL;
     }
   }
 
   if (keyStates['a']) { // strafe left motion
-    pxspeed -= cos(roty) * PLAYER_ACCEL;
-    pzspeed -= sin(roty) * PLAYER_ACCEL;
+    players[identity].speed.x -= cos(roty) * PLAYER_ACCEL;
+    players[identity].speed.z -= sin(roty) * PLAYER_ACCEL;
   } else if (keyStates['d']) { // strafe right motion
-    pxspeed += cos(roty) * PLAYER_ACCEL;
-    pzspeed += sin(roty) * PLAYER_ACCEL;
+    players[identity].speed.x += cos(roty) * PLAYER_ACCEL;
+    players[identity].speed.z += sin(roty) * PLAYER_ACCEL;
   }
 
-  float pxspeed_squared = pxspeed*pxspeed;
-  float pzspeed_squared = pzspeed*pzspeed;
+  float pxspeed_squared = players[identity].speed.x*players[identity].speed.x;
+  float pzspeed_squared = players[identity].speed.z*players[identity].speed.z;
   float playerspeed_squared = PLAYER_SPEED*PLAYER_SPEED;
   // limit max-speed in any direction to PLAYER_SPEED
   if (pxspeed_squared + pzspeed_squared > playerspeed_squared) {
-    pxspeed = oldxspeed;
-    pzspeed = oldzspeed;
+    players[identity].speed.x = oldxspeed;
+    players[identity].speed.z = oldzspeed;
   }
 
   oldvx = vx;
   oldvy = vy;
   oldvz = vz;
 
-  vx += pxspeed;
-  vy += pyspeed;
-  vz += pzspeed;
+  vx += players[identity].speed.x;
+  vy += players[identity].speed.y;
+  vz += players[identity].speed.z;
 
   const float MAX_FALL_SPEED = 1;
   int ix = (int)vx;
@@ -138,15 +138,15 @@ void update()
   int spot_above = world[ix][iy+1][iz];
   if (flycontrol == 0) {
     if (spot_below == EMPTY || spot_below == WHITE) {
-      pyspeed -= 0.18;
-      if (pyspeed > MAX_FALL_SPEED) {
-        pyspeed = MAX_FALL_SPEED;
+      players[identity].speed.y -= 0.18;
+      if (players[identity].speed.y > MAX_FALL_SPEED) {
+        players[identity].speed.y = MAX_FALL_SPEED;
       }
     } else if (
       (spot != EMPTY && spot != WHITE) ||
       (spot_above != EMPTY && spot_above != WHITE)
     ) {
-      pyspeed = 0;
+      players[identity].speed.y = 0;
       if (spot_above == EMPTY) {
         vy += 1;
       } else {
@@ -156,7 +156,7 @@ void update()
         vz = oldvz;
       }
     } else {
-      pyspeed = 0;
+      players[identity].speed.y = 0;
     }
   }
 
@@ -165,27 +165,27 @@ void update()
   }
 
 
-  float total_speed = sqrt(pxspeed*pxspeed+pyspeed*pyspeed+pzspeed*pzspeed);
-  float normalized_pxspeed = total_speed == 0 ? 0 : pxspeed/total_speed;
-  float normalized_pyspeed = total_speed == 0 ? 0 : pyspeed/total_speed;
-  float normalized_pzspeed = total_speed == 0 ? 0 : pzspeed/total_speed;
+  float total_speed = sqrt(players[identity].speed.x*players[identity].speed.x+players[identity].speed.y*players[identity].speed.y+players[identity].speed.z*players[identity].speed.z);
+  float normalized_pxspeed = total_speed == 0 ? 0 : players[identity].speed.x/total_speed;
+  float normalized_pyspeed = total_speed == 0 ? 0 : players[identity].speed.y/total_speed;
+  float normalized_pzspeed = total_speed == 0 ? 0 : players[identity].speed.z/total_speed;
   float decel_constant = -0.14;
-  if (fabsf(pxspeed) <= fabsf(decel_constant*normalized_pxspeed)) {
-    pxspeed = 0;
+  if (fabsf(players[identity].speed.x) <= fabsf(decel_constant*normalized_pxspeed)) {
+    players[identity].speed.x = 0;
   } else {
-    pxspeed += decel_constant*normalized_pxspeed;
+    players[identity].speed.x += decel_constant*normalized_pxspeed;
   }
 
-  if (fabsf(pyspeed) <= fabsf(decel_constant*normalized_pyspeed)) {
-    pyspeed = 0;
+  if (fabsf(players[identity].speed.y) <= fabsf(decel_constant*normalized_pyspeed)) {
+    players[identity].speed.y = 0;
   } else {
-    pyspeed += decel_constant*normalized_pyspeed;
+    players[identity].speed.y += decel_constant*normalized_pyspeed;
   }
 
-  if (fabsf(pzspeed) <= fabsf(decel_constant*normalized_pzspeed)) {
-    pzspeed = 0;
+  if (fabsf(players[identity].speed.z) <= fabsf(decel_constant*normalized_pzspeed)) {
+    players[identity].speed.z = 0;
   } else {
-    pzspeed += decel_constant*normalized_pzspeed;
+    players[identity].speed.z += decel_constant*normalized_pzspeed;
   }
 
   while (mx >= 360) { mx -= 360; }
@@ -320,7 +320,7 @@ int main(int argc, char* argv[])
     server_socket = server_setup();
   }
 
-  createPlayer(identity, 50, 70, 50, 0, 0);
+  createPlayer(identity, 50, 70, 50, 0, 90);
   // if you're visible to yourself you'll block your camera
   hidePlayer(identity);
 
