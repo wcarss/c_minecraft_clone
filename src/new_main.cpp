@@ -44,6 +44,21 @@ void destroyGameObject(GameObject *gameObject)
   free(gameObject);
 }
 
+void renderCube(GameObject *gameObject, Material *material)
+{
+  //Material *mat = gameObject->mat;
+  Shader *shader = material->shader;
+  shader->setInt("material.diffuse", material->diffuseTexture);
+
+  glm::mat4 model = glm::translate(glm::mat4(1.0f), gameObject->pos);
+  model = glm::rotate(model, (float)glfwGetTime() * gameObject->angle, gameObject->rot);
+  model = glm::scale(model, gameObject->scale);
+
+  unsigned int modelLoc = glGetUniformLocation(shader->ID, "model");
+  glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+  glDrawArrays(GL_TRIANGLES, 0, gameObject->mesh->size);
+}
+
 void renderGameObject(GameObject *gameObject, glm::mat4 view, glm::mat4 projection)
 {
   Material *mat = gameObject->mat;
@@ -91,7 +106,7 @@ void renderSkybox(GameObject *skybox, glm::mat4 view, glm::mat4 projection)
 
 void setupCam(Camera* cam)
 {
-  cam->pos = glm::vec3(0.0f, 0.0f,  3.0f);
+  cam->pos = glm::vec3(50.0f, 70.0f, 50.0f);
   cam->front = glm::vec3(0.0f, 0.0f, -1.0f);
   cam->up = glm::vec3(0.0f, 1.0f,  0.0f);
   cam->forwardPressed = false;
@@ -398,24 +413,86 @@ unsigned int loadCubemap(int tex_number, std::vector<std::string> faces)
   return textureID;
 }
 
-void renderScene(GameContext *gc, GameObject *skybox, GameObject *plane, GameObject *cube, glm::mat4 view, glm::mat4 projection, int mode)
+void renderScene(GameContext *gc, Material *mats[9], GameObject *skybox, GameObject *plane, GameObject *cube, glm::mat4 view, glm::mat4 projection, int mode)
 {
   if (mode == FOR_REAL) {
     buildDisplayList(gc, view, projection);
+    renderSkybox(skybox, view, projection);
   }
 
-  renderSkybox(skybox, view, projection);
+  glBindVertexArray(cube->mesh->vao);
+  Material *mat = cube->mat;
+  Shader *shader = mat->shader;
+  shader->use();
+
+  //unsigned int modelLoc = glGetUniformLocation(shader->ID, "model");
+  unsigned int viewLoc = glGetUniformLocation(shader->ID, "view");
+  unsigned int projLoc = glGetUniformLocation(shader->ID, "projection");
+
+  shader->setInt("material.specular", mat->specularTexture);
+  shader->setFloat("material.shininess", mat->shininess);
+  shader->setInt("material.diffuse", mat->diffuseTexture);
+  shader->setVec3f("material.ambient", mat->ambientColor.r, mat->ambientColor.g, mat->ambientColor.b);
+  shader->setInt("material.emission", mat->emissionValues);
+  shader->setInt("material.emission_map", mat->emissionMap);
+  glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+  glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
   for (int i = 0; i < gc->displayCount; i++) {
     int x = gc->displayList[i][0];
     int y = gc->displayList[i][1];
     int z = gc->displayList[i][2];
-    cube->pos = glm::vec3(x, y, z);
 
-    if (gc->world[x][y][z] != 0) {
-      renderGameObject(
-        cube, view, projection
-      );
+    // 0 / ???: containerMaterial,
+    // 1 / COAL: container2Material
+    // 2 / ???: generic01Material
+    // 3 / BLUE: generic02Material
+    // 4 / GREEN: grassMaterial
+    // 5 / DIRT: dirtMaterial
+    // 6 / YELLOW / RED: awesomefaceMaterial
+    // 7 / STONE: stoneMaterial
+    // 8 / BLUE: WaterMaterial
+
+    switch (gc->world[x][y][z]) {
+    case EMPTY:
+      break;
+
+    case COAL:
+      mat = mats[1];
+      break;
+
+    case GREEN:
+      mat = mats[4];
+      break;
+
+    case DIRT:
+      mat = mats[5];
+      break;
+
+    case YELLOW:
+      mat = mats[6];
+      break;
+
+    case RED:
+      mat = mats[6];
+      break;
+
+    case STONE:
+      mat = mats[7];
+      break;
+
+    case BLUE:
+      mat = mats[8];
+      break;
+
+    default:
+      mat = mats[6];
+
+    }
+
+    if (gc->world[x][y][z] != EMPTY) {
+      cube->pos = glm::vec3(x, y, z);
+      renderCube(cube, mat);
     }
   }
 
@@ -525,10 +602,12 @@ int main(int argc, char** argv)
   unsigned int awesomeface = loadTexture(7, "images/awesomeface.png");
   unsigned int matrixTexture = loadTexture(8, "images/matrix.jpg");
   unsigned int blankTexture = loadTexture(9, "images/1x1.png");
-  unsigned int grassTexture = loadTexture(10, "images/grass.png");
-  unsigned int dirtTexture = loadTexture(11, "images/grass.png");
+  unsigned int grassTexture = loadTexture(10, "images/grasstop.png");
+  unsigned int dirtTexture = loadTexture(11, "images/dirt.png");
+  unsigned int stoneTexture = loadTexture(12, "images/stone.png");
+  unsigned int waterTexture = loadTexture(13, "images/water.png");
   stbi_set_flip_vertically_on_load(false);
-  unsigned int skyboxTexture = loadCubemap(12, vfaces);
+  unsigned int skyboxTexture = loadCubemap(14, vfaces);
 
   /* end texture loading */
   Shader lightingShader("src/shaders/lighting_shader.vs", "src/shaders/lighting_shader.fs");
@@ -545,7 +624,10 @@ int main(int argc, char** argv)
   Material *generic02Material   = createMaterial(&lightingShader,  blankTexture,        16.0f,      generic02,     defaultAmbientColor, blankTexture,  blankTexture);
   Material *grassMaterial       = createMaterial(&lightingShader,  blankTexture,        16.0f,      grassTexture,  defaultAmbientColor, blankTexture,  blankTexture);
   Material *dirtMaterial        = createMaterial(&lightingShader,  blankTexture,        16.0f,      dirtTexture,   defaultAmbientColor, blankTexture,  blankTexture);
+  Material *stoneMaterial        = createMaterial(&lightingShader, blankTexture,        16.0f,      stoneTexture,  defaultAmbientColor, blankTexture,  blankTexture);
+  Material *waterMaterial        = createMaterial(&lightingShader, blankTexture,        16.0f,      waterTexture,  defaultAmbientColor, blankTexture,  blankTexture);
   Material *skyboxMaterial      = createMaterial(&skyboxShader,    blankTexture,        16.0f,      skyboxTexture, defaultAmbientColor, blankTexture,  blankTexture);
+  Material *mats[9] = {containerMaterial, container2Material, generic01Material, generic02Material, grassMaterial, dirtMaterial, awesomefaceMaterial, stoneMaterial, waterMaterial};
   //Material *depthMaterial       = createMaterial(&debugDepthShader, blankTexture,       16.0f,      generic01,  defaultAmbientColor, blankTexture,  blankTexture);
 
   /* declare vertices */
@@ -697,6 +779,8 @@ int main(int argc, char** argv)
   lightingShader.setVec3f("dirLight.diffuse", dirLight.diffuse.r, dirLight.diffuse.g, dirLight.diffuse.b);
   lightingShader.setVec3f("dirLight.ambient", dirLight.ambient.r, dirLight.ambient.g, dirLight.ambient.b);
 
+  trimout(&game);
+
   /* Loop until the user closes the window */
   while (!glfwWindowShouldClose(window)) {
     float currentFrame = glfwGetTime();
@@ -729,7 +813,7 @@ int main(int argc, char** argv)
     glClear(GL_DEPTH_BUFFER_BIT);
     glCullFace(GL_FRONT);
     // render to depth buffer
-    renderScene(&game, skybox, plane, cube, view, projection, FOR_DEPTH);
+    renderScene(&game, mats, skybox, plane, cube, view, projection, FOR_DEPTH);
 
     // put framebuffer back to normal
     glCullFace(GL_BACK);
@@ -738,7 +822,7 @@ int main(int argc, char** argv)
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the buffers
 
-    projection = glm::perspective(glm::radians(45.0f), 1280.0f / 720.0f, 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(45.0f), 1280.0f / 720.0f, 0.1f, 150.0f);
     view = glm::lookAt(cam.pos, cam.pos + cam.front, cam.up);
 
     //debugDepthShader.use();
@@ -747,7 +831,7 @@ int main(int argc, char** argv)
     glActiveTexture(GL_TEXTURE0 + depthMap);
     glBindTexture(GL_TEXTURE_2D, depthMap);
     //renderGameObject(debugQuad, view, projection);
-    renderScene(&game, skybox, plane, cube, view, projection, FOR_REAL);
+    renderScene(&game, mats, skybox, plane, cube, view, projection, FOR_REAL);
 
     /* Swap front and back buffers */
     glfwSwapBuffers(window);

@@ -59,7 +59,7 @@ void buildDisplayList(GameContext *gc, glm::mat4 view, glm::mat4 projection)
   //static int frame = 0, time, timebase = 0;
   int displayCount = 0;
 
-  trimout(gc);
+  //trimout(gc);
   ExtractFrustum(gc, view, projection);
 
   for (int i = 0; i < WORLDX; i++) {
@@ -158,6 +158,8 @@ int CubeInFrustum(GameContext *gc, float x, float y, float z, float size)
 
 void ExtractFrustum(GameContext *gc, glm::mat4 view, glm::mat4 projection)
 {
+  //projection = glm::transpose(projection);
+  //view = glm::transpose(view);
   float   *proj = (float *)&projection;
   float   *modl = (float *)&view;
   float   clip[16];

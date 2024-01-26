@@ -120,24 +120,24 @@ void maze(GameContext *gc, int low, int high)
         }
       }
     }
-  }
 
-  int lines = rand() % 15;
-  int x = 0;
+    int lines = rand() % 15;
+    int x = 0;
 
-  for (int num = 0; num < lines; num++) {
-    if (num == 0) {
-      x = 45;
-    } else {
-      x = rand() % (WORLDX - 1);
-    }
+    for (int num = 0; num < lines; num++) {
+      if (num == 0) {
+        x = 45;
+      } else {
+        x = rand() % (WORLDX - 1);
+      }
 
-    for (int z = 1; z < WORLDZ - 1; z++) {
-      for (int y = low; y <= high; y++) {
-        if (dimension_increment == 0) {
-          gc->world[x][y][z] = EMPTY;
-        } else if (dimension_increment == 1) {
-          gc->world[z][y][x] = EMPTY;
+      for (int z = 1; z < WORLDZ - 1; z++) {
+        for (int y = low; y <= high; y++) {
+          if (dimension_increment == 0) {
+            gc->world[x][y][z] = EMPTY;
+          } else if (dimension_increment == 1) {
+            gc->world[z][y][x] = EMPTY;
+          }
         }
       }
     }
@@ -177,9 +177,9 @@ int build_world(GameContext *gc)
   fill(gc, 17, 17, STONE);
   fill(gc, 21, 21, STONE);
   perlin(gc, 21, 30, STONE);
-  perlin(gc, 25, 75, DIRT);
+  perlin(gc, 25, 60, DIRT);
   cover(gc, GREEN);
-  fill_lakes(gc, 40);
+  fill_lakes(gc, 42);
   mark(gc, 45, 44, RED);
   mark(gc, 44, 45, RED);
   mark(gc, 46, 45, RED);

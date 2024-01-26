@@ -69,26 +69,27 @@ void main()
     result.z = max(result.z, pointResult.z);
   }
 
-  vec3 emissionResult = texture(material.emission_map, TexCoords).rgb * texture(material.emission, TexCoords).rgb;
-  result.x = max(result.x, emissionResult.x);
-  result.y = max(result.y, emissionResult.y);
-  result.z = max(result.z, emissionResult.z);
+  //vec3 emissionResult = texture(material.emission_map, TexCoords).rgb * texture(material.emission, TexCoords).rgb;
+  //result.x = max(result.x, emissionResult.x);
+  //result.y = max(result.y, emissionResult.y);
+  //result.z = max(result.z, emissionResult.z);
 
   // phase 3: Spot light
   //result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
 
-  vec3 I = normalize(FragPos - viewPos);
+  // vec3 I = normalize(FragPos - viewPos);
   // for reflection:
-  vec3 R = reflect(I, normalize(Normal));
+  //vec3 R = reflect(I, normalize(Normal));
 
   // for refraction (as opposed to reflection)
   // float ratio = 1.00 / 1.33;
   // air: 1.00, water 1.33, ice 1.309, glass 1.52, diamond 2.42
   // vec3 R = refract(I, normalize(Normal), ratio);
-  vec3 reflect_result = texture(skybox, R).rgb;
+  //vec3 reflect_result = texture(skybox, R).rgb;
 
   // 0.68 and 0.58 "just because" -- need to darken the values, given we're summing them
-  FragColor = vec4(result * 0.92 + reflect_result * 0.08, 1.0);
+  //FragColor = vec4(result * 0.92 + reflect_result * 0.08, 1.0);
+  FragColor = vec4(result , 1.0);
 }
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
