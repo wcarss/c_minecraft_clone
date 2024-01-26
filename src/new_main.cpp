@@ -1,81 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <shader.h>
-#include <stb_image.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#define WITHOUT_ATTRIBUTES 0
-#define WITH_ATTRIBUTES 1
-#define FOR_REAL 0
-#define FOR_DEPTH 1
-
-typedef struct {
-  glm::vec3 pos;
-  glm::vec3 front;
-  glm::vec3 up;
-  bool forwardPressed;
-  bool backwardPressed;
-  bool leftPressed;
-  bool rightPressed;
-  float speed;
-  float height;
-  bool shouldJump;
-  bool jump;
-  float jumpStart;
-  float jumpSpeed;
-  float maxFallSpeed;
-  float maxJumpSpeed;
-  float jumpTime;
-  float fallSpeed;
-  float gravity;
-  bool canJump;
-  float pitch;
-  float yaw;
-  float lightsUsedControl;
-} Camera;
-
-typedef struct {
-  int vao;
-  int size;
-} Mesh;
-
-typedef struct {
-  Shader *shader;
-  int specularTexture;
-  float shininess;
-  int ambientTexture; // currently unused
-  int diffuseTexture;
-  int emissionValues;
-  int emissionMap;
-  glm::vec3 ambientColor;
-  glm::vec3 specularColor;
-  glm::vec3 diffuseColor;
-} Material;
-
-typedef struct {
-  Mesh *mesh; // vertex array object, created with createMesh
-  Material *mat; // material created with createMaterial
-  glm::vec3 pos;
-  glm::vec3 rot;
-  glm::vec3 scale;
-  float angle;
-} GameObject;
-
-typedef struct {
-  glm::vec3 specular;
-  glm::vec3 diffuse;
-  glm::vec3 ambient;
-  glm::vec3 dir;
-} DirLight;
-
-typedef struct {
-  Camera* cam;
-} GameContext;
+#include <new_core.h>
+#include <new_world.h>
+#include <visibility.h>
 
 Material* createMaterial(Shader *shader, int specularTexture, float shininess, int diffuseTexture, glm::vec3 ambientColor, int emissionValues, int emissionMap)
 {
@@ -173,7 +98,7 @@ void setupCam(Camera* cam)
   cam->backwardPressed = false;
   cam->leftPressed = false;
   cam->rightPressed = false;
-  cam->speed = 2.5f;
+  cam->speed = 22.5f;
   cam->height = 0;
   cam->jump = false;
   cam->shouldJump = false;
@@ -194,13 +119,13 @@ void processCamera(Camera* cam, float deltaTime, float currentFrame)
 {
   float deltaSpeed = cam->speed * deltaTime;
 
-  if (!cam->jump && cam->shouldJump) {
-    cam->shouldJump = false;
-    cam->canJump = false;
-    cam->jump = true;
-    cam->jumpStart = currentFrame;
-    cam->jumpSpeed = cam->maxJumpSpeed;
-  }
+  /*  if (!cam->jump && cam->shouldJump) {
+      cam->shouldJump = false;
+      cam->canJump = false;
+      cam->jump = true;
+      cam->jumpStart = currentFrame;
+      cam->jumpSpeed = cam->maxJumpSpeed;
+    }*/
 
   if (cam->forwardPressed) {
     cam->forwardPressed = false;
@@ -222,37 +147,37 @@ void processCamera(Camera* cam, float deltaTime, float currentFrame)
     cam->pos += glm::normalize(glm::cross(cam->front, cam->up)) * deltaSpeed;
   }
 
-  if (cam->jump == true) {
-    float jumpStartDelta = currentFrame - cam->jumpStart;
+  /*  if (cam->jump == true) {
+      float jumpStartDelta = currentFrame - cam->jumpStart;
 
-    // jump runs for "2 seconds", or something.
-    if (jumpStartDelta < cam->jumpTime) {
-      cam->height += cam->jumpSpeed * deltaTime;
-      cam->jumpSpeed -= cam->gravity * deltaTime;
+      // jump runs for "2 seconds", or something.
+      if (jumpStartDelta < cam->jumpTime) {
+        cam->height += cam->jumpSpeed * deltaTime;
+        cam->jumpSpeed -= cam->gravity * deltaTime;
 
-      if (cam->jumpSpeed < 0.0f) {
-        //printf("redundant jump speed call: %f\n", cam->jumpSpeed);
-        cam->jumpSpeed = 0;
+        if (cam->jumpSpeed < 0.0f) {
+          //printf("redundant jump speed call: %f\n", cam->jumpSpeed);
+          cam->jumpSpeed = 0;
+        }
+      } else {
+        cam->jump = false;
+        cam->jumpStart = 0;
+        cam->fallSpeed = cam->jumpSpeed;
       }
-    } else {
-      cam->jump = false;
-      cam->jumpStart = 0;
-      cam->fallSpeed = cam->jumpSpeed;
-    }
-  } else if (cam->height > 0.1f) {
-    cam->height -= cam->fallSpeed * deltaTime;
-    cam->fallSpeed += cam->gravity * deltaTime;
+    } else if (cam->height > 0.1f) {
+      cam->height -= cam->fallSpeed * deltaTime;
+      cam->fallSpeed += cam->gravity * deltaTime;
 
-    if (cam->fallSpeed > cam->maxFallSpeed) {
-      cam->fallSpeed = cam->maxFallSpeed;
+      if (cam->fallSpeed > cam->maxFallSpeed) {
+        cam->fallSpeed = cam->maxFallSpeed;
+      }
+    } else if (cam->height < 0.1f) {
+      cam->canJump = true;
+      cam->height = 0.0f;
+      cam->fallSpeed = 0.0f;
     }
-  } else if (cam->height < 0.1f) {
-    cam->canJump = true;
-    cam->height = 0.0f;
-    cam->fallSpeed = 0.0f;
-  }
 
-  cam->pos.y = cam->height;
+    cam->pos.y = cam->height;*/
 
   glm::vec3 direction;
   direction.x = cos(glm::radians(cam->yaw)) * cos(glm::radians(cam->pitch));
@@ -473,11 +398,43 @@ unsigned int loadCubemap(int tex_number, std::vector<std::string> faces)
   return textureID;
 }
 
-void renderScene(GameObject *skybox, GameObject *plane, GameObject *cube, glm::mat4 view, glm::mat4 projection, int mode)
+void renderScene(GameContext *gc, GameObject *skybox, GameObject *plane, GameObject *cube, glm::mat4 view, glm::mat4 projection, int mode)
 {
+  if (mode == FOR_REAL) {
+    buildDisplayList(gc, view, projection);
+  }
+
   renderSkybox(skybox, view, projection);
-  renderGameObject(plane, view, projection);
-  renderGameObject(cube, view, projection);
+
+  for (int i = 0; i < gc->displayCount; i++) {
+    int x = gc->displayList[i][0];
+    int y = gc->displayList[i][1];
+    int z = gc->displayList[i][2];
+    cube->pos = glm::vec3(x, y, z);
+
+    if (gc->world[x][y][z] != 0) {
+      renderGameObject(
+        cube, view, projection
+      );
+    }
+  }
+
+  //printf("other side of the cubes: %d\n", displayCount);
+
+  /*
+    for (int i = 0; i < WORLDX; i++) {
+      for (int j = 0; j < WORLDY; j++) {
+        for (int k = 0; k < WORLDZ; k++) {
+          if (gc->world[i][j][k] != 0) {
+            cube->pos = glm::vec3(i, j, k);
+            renderGameObject(cube, view, projection);
+          }
+        }
+      }
+    }
+  */
+
+  //renderGameObject(cube, view, projection);
 }
 
 int main(int argc, char** argv)
@@ -486,9 +443,22 @@ int main(int argc, char** argv)
   const int WINDOW_HEIGHT = 720;
   GLFWwindow* window;
   GameContext game;
+  game.displayList = (int **)malloc(sizeof(int *) * MAX_DISPLAY_LIST);
+
+  for (int i = 0; i < MAX_DISPLAY_LIST; i++) {
+    game.displayList[i] = (int *)malloc(sizeof(int) * 3);
+  }
+
+  game.frustum = (float **)malloc(sizeof(float *) * 6);
+
+  for (int i = 0; i < 6; i++) {
+    game.frustum[i] = (float *)malloc(sizeof(float) * 4);
+  }
+
   Camera cam;
   setupCam(&cam);
   game.cam = &cam;
+  srand(time(NULL));
   float deltaTime = 0.0f; // Time between current frame and last frame
   float lastFrame = 0.0f; // Time of last frame
   DirLight dirLight;
@@ -527,6 +497,10 @@ int main(int argc, char** argv)
 
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   glfwSetCursorPosCallback(window, mouse_callback);
+
+  build_world(&game);
+  //build_little_world(&game);
+
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   glEnable(GL_DEPTH_TEST);
 
@@ -551,8 +525,10 @@ int main(int argc, char** argv)
   unsigned int awesomeface = loadTexture(7, "images/awesomeface.png");
   unsigned int matrixTexture = loadTexture(8, "images/matrix.jpg");
   unsigned int blankTexture = loadTexture(9, "images/1x1.png");
+  unsigned int grassTexture = loadTexture(10, "images/grass.png");
+  unsigned int dirtTexture = loadTexture(11, "images/grass.png");
   stbi_set_flip_vertically_on_load(false);
-  unsigned int skyboxTexture = loadCubemap(10, vfaces);
+  unsigned int skyboxTexture = loadCubemap(12, vfaces);
 
   /* end texture loading */
   Shader lightingShader("src/shaders/lighting_shader.vs", "src/shaders/lighting_shader.fs");
@@ -567,6 +543,8 @@ int main(int argc, char** argv)
   Material *awesomefaceMaterial = createMaterial(&lightingShader,  blankTexture,        64.0f,      awesomeface,   defaultAmbientColor, awesomeface,   awesomeface);
   Material *generic01Material   = createMaterial(&lightingShader,  blankTexture,        16.0f,      generic01,     defaultAmbientColor, blankTexture,  blankTexture);
   Material *generic02Material   = createMaterial(&lightingShader,  blankTexture,        16.0f,      generic02,     defaultAmbientColor, blankTexture,  blankTexture);
+  Material *grassMaterial       = createMaterial(&lightingShader,  blankTexture,        16.0f,      grassTexture,  defaultAmbientColor, blankTexture,  blankTexture);
+  Material *dirtMaterial        = createMaterial(&lightingShader,  blankTexture,        16.0f,      dirtTexture,   defaultAmbientColor, blankTexture,  blankTexture);
   Material *skyboxMaterial      = createMaterial(&skyboxShader,    blankTexture,        16.0f,      skyboxTexture, defaultAmbientColor, blankTexture,  blankTexture);
   //Material *depthMaterial       = createMaterial(&debugDepthShader, blankTexture,       16.0f,      generic01,  defaultAmbientColor, blankTexture,  blankTexture);
 
@@ -697,7 +675,7 @@ int main(int argc, char** argv)
   Mesh *skyboxMesh = createMesh(vertices_skybox, 36, sizeof(vertices_skybox), WITHOUT_ATTRIBUTES);
 
   GameObject *plane = createGameObject(planeMesh, generic02Material, glm::vec3(0.0f, -0.5f, 0.0f));
-  GameObject *cube = createGameObject(cubeMesh, container2Material, glm::vec3(0.0f, 1.0f, 0.0f));
+  GameObject *cube = createGameObject(cubeMesh, grassMaterial, glm::vec3(0.0f, 1.0f, 0.0f));
   //GameObject *debugQuad = createGameObject(quadMesh, depthMaterial, glm::vec3(1.0f, 0.5f, 0.0f));
   //GameObject *wall = createGameObject(cubeMesh, generic01Material, glm::vec3(0.0f));
   GameObject *skybox = createGameObject(skyboxMesh, skyboxMaterial, glm::vec3(0.0f));
@@ -751,7 +729,7 @@ int main(int argc, char** argv)
     glClear(GL_DEPTH_BUFFER_BIT);
     glCullFace(GL_FRONT);
     // render to depth buffer
-    renderScene(skybox, plane, cube, view, projection, FOR_REAL);
+    renderScene(&game, skybox, plane, cube, view, projection, FOR_DEPTH);
 
     // put framebuffer back to normal
     glCullFace(GL_BACK);
@@ -769,7 +747,7 @@ int main(int argc, char** argv)
     glActiveTexture(GL_TEXTURE0 + depthMap);
     glBindTexture(GL_TEXTURE_2D, depthMap);
     //renderGameObject(debugQuad, view, projection);
-    renderScene(skybox, plane, cube, view, projection, FOR_REAL);
+    renderScene(&game, skybox, plane, cube, view, projection, FOR_REAL);
 
     /* Swap front and back buffers */
     glfwSwapBuffers(window);
@@ -777,6 +755,18 @@ int main(int argc, char** argv)
     /* Poll for and process events */
     glfwPollEvents();
   }
+
+  for (int i = 0; i < MAX_DISPLAY_LIST; i++) {
+    free(game.displayList[i]);
+  }
+
+  free(game.displayList);
+
+  for (int i = 0; i < 6; i++) {
+    free(game.frustum[i]);
+  }
+
+  free(game.frustum);
 
   glfwTerminate();
   return 0;

@@ -5,9 +5,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 #include <math.h>
-#include "perlin.h"
+#include <perlin.h>
 
 static int p[B + B + 2];
 static double g3[B + B + 2][3];

@@ -3,7 +3,7 @@ SRC_FILES = main.c engine.c perlin.c visibility.c test_world.c world.c network.c
 INCLUDE_FILES = $(INCLUDE)/engine.h $(INCLUDE)/perlin.h $(INCLUDE)/visibility.h $(INCLUDE)/test_world.h $(INCLUDE)/world.h $(INCLUDE)/network.h
 CFLAGS = -Wall -std=c99 -g -pedantic -Wno-strict-prototypes
 
-NEW_SRC_FILES = new_main.cpp glad.cpp stb_image_stub.cpp
+NEW_SRC_FILES = new_main.cpp glad.cpp stb_image_stub.cpp perlin.cpp new_world.cpp visibility.cpp
 NEW_CFLAGS = -Wall -std=c++11 -g -pedantic -Wno-strict-prototypes
 
 # found via xcrun --sdk macosx --show-sdk-path, w/ /System/Library/Frameworks/ appended:

@@ -1,10 +1,9 @@
 #include <math.h>
 #include <stdio.h>
+#include <new_core.h>
+#include <visibility.h>
 
-#include "engine.h"
-#include "visibility.h"
-
-int you_can_see(int x, int y, int z)
+int you_can_see(GameContext *gc, int x, int y, int z)
 {
   if (x == 0 || y == 0 || z == 0) {
     return 0;
@@ -14,16 +13,16 @@ int you_can_see(int x, int y, int z)
     return 0;
   }
 
-  if (world[x + 1][y][z] == 0 || world[x - 1][y][z] == 0
-      || world[x][y + 1][z] == 0 || world[x][y - 1][z] == 0
-      || world[x][y][z + 1] == 0 || world[x][y][z - 1] == 0) {
+  if (gc->world[x + 1][y][z] == 0 || gc->world[x - 1][y][z] == 0
+      || gc->world[x][y + 1][z] == 0 || gc->world[x][y - 1][z] == 0
+      || gc->world[x][y][z + 1] == 0 || gc->world[x][y][z - 1] == 0) {
     return 1;
   } else {
     return 0;
   }
 }
 
-void trimout()
+void trimout(GameContext *gc)
 {
   int debug = 0;
   int x, y, z;
@@ -31,19 +30,19 @@ void trimout()
   for (x = 0; x < WORLDX; x++) {
     for (y = 0; y < WORLDY; y++) {
       for (z = 0; z < WORLDZ; z++) {
-        if (you_can_see(x, y, z)) {
-          visible[x][y][z] = 1;
+        if (you_can_see(gc, x, y, z)) {
+          gc->visible[x][y][z] = 1;
         } else {
-          visible[x][y][z] = 0;
+          gc->visible[x][y][z] = 0;
         }
 
         if (y == 18 && (x == WORLDX - 1 || z == WORLDZ - 1 || x == 0 || z == 0)) {
-          visible[x][y][z] = 1;
+          gc->visible[x][y][z] = 1;
         }
 
         if (debug) {
           if (x == 0 || y == 0 || z == 0 || x == WORLDX - 1 || y == WORLDY - 1 || z == WORLDZ - 1) {
-            visible[x][y][z] = 0;
+            gc->visible[x][y][z] = 0;
           }
         }
       }
@@ -51,36 +50,43 @@ void trimout()
   }
 }
 
-
-
-
 /* determines which cubes are to be drawn and puts them into */
 /* the displayList  */
 /* write your cube culling code here */
-void buildDisplayList()
+void buildDisplayList(GameContext *gc, glm::mat4 view, glm::mat4 projection)
 {
   /* used to calculate frames per second */
-  static int frame = 0, time, timebase = 0;
-  int i, j, k;
+  //static int frame = 0, time, timebase = 0;
+  int displayCount = 0;
 
-  trimout();
-  ExtractFrustum();
-  displayCount = 0;
+  trimout(gc);
+  ExtractFrustum(gc, view, projection);
 
-  for (i = 0; i < WORLDX; i++) {
-    for (j = 0; j < WORLDY; j++) {
-      for (k = 0; k < WORLDZ; k++) {
-        if (visible[i][j][k] == 1 && world[i][j][k] != 0 && CubeInFrustum(i, j, k, 0.5)) {
-          addDisplayList(i, j, k);
+  for (int i = 0; i < WORLDX; i++) {
+    for (int j = 0; j < WORLDY; j++) {
+      for (int k = 0; k < WORLDZ; k++) {
+        if (gc->visible[i][j][k] == 1 && gc->world[i][j][k] != 0 && CubeInFrustum(gc, i, j, k, 0.5)) {
+          gc->displayList[displayCount][0] = i;
+          gc->displayList[displayCount][1] = j;
+          gc->displayList[displayCount][2] = k;
+          displayCount++;
+
+          if (displayCount > MAX_DISPLAY_LIST) {
+            printf("You have put more items in the display list then there are\n");
+            printf("cubes in the world. Set displayCount = 0 at some point.\n");
+            exit(1);
+          }
         }
       }
     }
   }
 
+  gc->displayCount = displayCount;
+
   /* frame per second calculation */
   /* don't change the following routine */
   /* http://www.lighthouse3d.com/opengl/glut/index.php?fps */
-  if (showFPS == 1) {
+  /*if (showFPS == 1) {
     frame++;
     time = glutGet(GLUT_ELAPSED_TIME);
 
@@ -89,18 +95,18 @@ void buildDisplayList()
       timebase = time;
       frame = 0;
     }
-  }
-
-  /* redraw the screen at the end of the update */
-  glutPostRedisplay();
+  }*/
 }
 
-int CubeInFrustum(float x, float y, float z, float size)
+int CubeInFrustum(GameContext *gc, float x, float y, float z, float size)
 {
   int p;
   int c;
   int c2 = 0;
   int v = -2;
+
+  // goodness I hope this works!
+  float **frustum = gc->frustum;
 
   for (p = 0; p < 6; p++) {
     c = 0;
@@ -150,18 +156,21 @@ int CubeInFrustum(float x, float y, float z, float size)
 }
 
 
-void ExtractFrustum()
+void ExtractFrustum(GameContext *gc, glm::mat4 view, glm::mat4 projection)
 {
-  float   proj[16];
-  float   modl[16];
+  float   *proj = (float *)&projection;
+  float   *modl = (float *)&view;
   float   clip[16];
   float   t;
 
+  // goodness I hope this works!
+  float **frustum = gc->frustum;
+
   /* Get the current PROJECTION matrix from OpenGL */
-  glGetFloatv(GL_PROJECTION_MATRIX, proj);
+  //glGetFloatv(GL_PROJECTION_MATRIX, proj);
 
   /* Get the current MODELVIEW matrix from OpenGL */
-  glGetFloatv(GL_MODELVIEW_MATRIX, modl);
+  //glGetFloatv(GL_MODELVIEW_MATRIX, modl);
 
   /* Combine the two matrices (multiply projection by modelview) */
   clip[ 0] = modl[ 0] * proj[ 0] + modl[ 1] * proj[ 4] + modl[ 2] * proj[ 8] + modl[ 3] * proj[12];
@@ -263,12 +272,10 @@ void ExtractFrustum()
   frustum[5][3] /= t;
 }
 
-int PointInFrustum(float x, float y, float z)
+int PointInFrustum(GameContext *gc, float x, float y, float z)
 {
-  int p;
-
-  for (p = 0; p < 6; p++) {
-    if (frustum[p][0] * x + frustum[p][1] * y + frustum[p][2] * z + frustum[p][3] <= 0) {
+  for (int p = 0; p < 6; p++) {
+    if (gc->frustum[p][0] * x + gc->frustum[p][1] * y + gc->frustum[p][2] * z + gc->frustum[p][3] <= 0) {
       return 0;
     }
   }
